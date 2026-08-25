@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.get("/health", (req, res) => {
   res.status(200).json(
-    ResponseFormatter.success(
+    ResponceFormatter.sucess(
       {
         status: "healthy",
         timeStamp: new Date().toISOString(),
