@@ -84,9 +84,6 @@ try {
    await postgres.connect();
    logger.info("Connected to Postgres");
 
-   
-   
-   
 } catch (error) {
     
 }
