@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import ResponceFormatter from "./shared/config/utils/ResponceFormatter";
 
 dotenv.config();
 
@@ -39,6 +40,25 @@ app.get("/health", (req, res) => {
     ),
   );
 });
+
+
+app.get('/',(req,res)=>
+{
+    res.status(200).json(ResponceFormatter.sucess({
+        service:"Api Monitoring Service",
+        version:'1.0.0',
+        endpoints:[
+            {
+                health:'/health',
+                auth:'/api/auth',
+                ingest:'api/hit',
+                analytics:'api/analytics'
+            }
+        ],
+            description:"API HIT MONITORING SERVICE"
+        
+    }))
+})
 
 const port = process.env.API_PORT;
 
