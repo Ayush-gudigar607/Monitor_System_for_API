@@ -1,0 +1,197 @@
+name: api_monitor
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: api-monitor-postgres
+
+    environment:
+      POSTGRES_DB: api_monitoring
+      POSTGRES_PASSWORD: ayush
+      POSTGRES_USER: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      # mount the initialization sql script to the docker container
+      - ./scripts/init-postgres.sql:/docker-entrypoint-initdb.d/init-postgres.sql
+
+    networks:
+      - api-monitoring-network
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d api_monitoring"] ##add username andndb name in the cmd
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:6.0.6
+    container_name: api-monitor-mongodb
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ayush
+      MONGO_INITDB_DATABASE: api_monitoring
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongodb_data:/data/db
+
+    networks:
+      - api-monitoring-network
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "root",
+          "--password",
+          "ayush",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: api-monitor-rabbitmq
+
+    environment:
+      RABBITMQ_DEFAULT_USER: api_user
+      RABBITMQ_DEFAULT_PASS: secure_password
+      RABBITMQ_DEFAULT_VHOST: api_monitoring
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    networks:
+      - api-monitoring-network
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "rabbitmq-diagnostics",
+          "-q",
+          "check_running"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  pgadmin:
+    image: dpage/pgadmin4:7.7
+    container_name: api-monitor-pgadmin
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+
+    networks:
+      - api-monitoring-network
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+  
+  api-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: api_monitor_app
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+
+      #MONGODB 
+      MONGO_URI: mongodb://root:ayush@mongodb:27017/api_monitoring?authSource=admin
+      MONGO_DB_NAME: api_monitoring
+
+      #POSTGRES(1. Database Connection Parameters (Environment Variables)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: api_monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ayush
+
+      #RABBITMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: api_user
+      RABBITMQ_PASSWORD: secure_password
+      RABBITMQ_URL: amqp://api_user:secure_password@rabbitmq:5672/api_monitoring 
+      RABBITMQ_QUEUE: api_monitoring_queuE
+
+      #SECURITY
+      JWT_SECRET: your_jwt_secret_key
+      JWT_EXPIRATION: 24h
+
+      #RATE LIMITING
+      RATE_LIMIT_WINDOW: 1m
+      RATE_LIMIT_MAX: 100
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - ./logs:/app/logs
+
+    networks:
+      - api-monitoring-network
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+networks:
+ api-monitoring-network:
+    driver: bridge
+    
