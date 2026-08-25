@@ -79,6 +79,12 @@ try {
    //connect to mongodb
    await mongodb.connect();
    logger.info("Connected to MongoDb");
+
+   //connect to postgres
+   await postgres.connect();
+   logger.info("Connected to Postgres");
+
+   
    
    
 } catch (error) {
