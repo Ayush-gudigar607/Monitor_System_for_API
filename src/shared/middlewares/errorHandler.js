@@ -1,7 +1,7 @@
 import logger from "../config/logger.js";
 import ResponceFormatter from "../utils/ResponceFormatter.js";
 
-const errorHabler=(err,req,res,next)=>
+const errorHandler=(err,req,res,next)=>
 {
     let statusCode=err.statusCode || 500;
     let message=err.message || "Internal server error"
@@ -56,3 +56,5 @@ const errorHabler=(err,req,res,next)=>
 
 
 }
+
+export default errorHandler;
