@@ -61,6 +61,11 @@ app.get('/',(req,res)=>
     }))
 })
 
+app.use((req,res)=>
+{
+    res.status(404).json(ResponceFormatter.error("Endpoints not found ",404))
+})
+
 const port = process.env.API_PORT;
 
 app.get("/health", (req, res) => {
