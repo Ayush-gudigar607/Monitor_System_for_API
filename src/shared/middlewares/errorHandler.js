@@ -1,5 +1,5 @@
 import logger from "../config/logger.js";
-import ResponceFormatter from "../config/utils/ResponceFormatter.js";
+import ResponceFormatter from "../utils/ResponceFormatter.js";
 
 const errorHabler=(err,req,res,next)=>
 {
