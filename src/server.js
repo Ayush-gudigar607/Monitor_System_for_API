@@ -7,6 +7,7 @@ import cors from "cors";
 import logger from "./shared/config/logger.js";
 import errorHabler from "./shared/middlewares/errorHandler.js";
 import mongodb from "./shared/config/mongodb.js";
+import rabbitmq from "./shared/config/rabbitmq.js";
 
 dotenv.config();
 
@@ -84,8 +85,15 @@ try {
    await postgres.connect();
    logger.info("Connected to Postgres");
 
+   //connect to the rabbitmq
+   await rabbitmq.connect();
+   logger.info("Connected to Rabbitmq");
+
+   logger.info("All Connections Are Established successfully")
+
 } catch (error) {
-    
+    logger.error("Failed to initializing connections",error);
+    throw error;
 }
 }
 
