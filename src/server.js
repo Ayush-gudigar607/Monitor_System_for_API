@@ -2,7 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import ResponceFormatter from "./shared/config/utils/ResponceFormatter";
+import ResponceFormatter from "./shared/config/utils/ResponceFormatter.js";
+import cors from "cors";
 
 dotenv.config();
 
