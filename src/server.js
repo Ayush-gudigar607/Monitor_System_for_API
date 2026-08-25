@@ -4,6 +4,9 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import ResponceFormatter from "./shared/utils/ResponceFormatter.js";
 import cors from "cors";
+import logger from "./shared/config/logger.js";
+import errorHabler from "./shared/middlewares/errorHandler.js";
+import mongodb from "./shared/config/mongodb.js";
 
 dotenv.config();
 
@@ -66,12 +69,21 @@ app.use((req,res)=>
     res.status(404).json(ResponceFormatter.error("Endpoints not found ",404))
 })
 
-const port = process.env.API_PORT;
+app.use(errorHabler);
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+async function initilizeConnections()
+{
+try {
+   logger.info("Connecting to MongoDB...");
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+   //connect to mongodb
+   await mongodb.connect();
+   logger.info("Connected to MongoDb");
+   
+   
+} catch (error) {
+    
+}
+}
+
+
