@@ -27,9 +27,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Sample route
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
+app.get("/health", (req, res) => {
+  res.status(200).json(
+    ResponseFormatter.success(
+      {
+        status: "healthy",
+        timeStamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      },
+      "service is healthy",
+    ),
+  );
 });
 
 const port = process.env.API_PORT;
