@@ -41,7 +41,7 @@ export class AuthService {
       }
 
       const user = await this.userRepository.create(SuperAdminData);
-      const token = SecurityUtils.generateToken({ user });
+      const token = SecurityUtils.generateToken(user);
 
       logger.info("Super Admin onboarded successfully");
       return { user: this.formateResponce(user), token };
@@ -66,7 +66,7 @@ export class AuthService {
       }
 
       const user = await this.userRepository.create(userData);
-      const token = SecurityUtils.generateToken({ user });
+      const token = SecurityUtils.generateToken(user);
 
       logger.info(`User registered successfully with email: ${user.email}`);
       return { user: this.formateResponce(user), token };
@@ -96,7 +96,7 @@ export class AuthService {
       }
 
       logger.info(`User logged in successfully with email: ${user.email}`);
-      const token = SecurityUtils.generateToken({ user });
+      const token = SecurityUtils.generateToken(user);
       return { user: this.formateResponce(user), token };
     } catch (err) {
       logger.error(`Error logging in user: ${err.message}`);
