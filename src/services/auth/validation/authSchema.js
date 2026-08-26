@@ -1,7 +1,7 @@
 import { email } from "zod/mini";
 import { isValidRole } from "../../../shared/constants/role.js";
 
-const emailpattern=/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+const emailPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
 export const onboardsuperAdminSchema = {
   username: {

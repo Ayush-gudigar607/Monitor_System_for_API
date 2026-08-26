@@ -4,7 +4,6 @@ const validate=(schema)=>(req,res,next)=>{
     if(!schema)
     {
         throw new Error("Validation schema is required");
-        return next();
     }
 
     const errors=[];
@@ -53,7 +52,7 @@ const validate=(schema)=>(req,res,next)=>{
             return res.status(400).json(ResponceFormatter.error("Validation Error", 400, errors));
         }
         
-
+        console.log("Validation passed for schema:", schema, "with body:", body);
         return next();
         
     })

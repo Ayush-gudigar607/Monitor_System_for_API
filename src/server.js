@@ -10,7 +10,10 @@ import rabbitmq from "./shared/config/rabbitmq.js";
 import postgres from "./shared/config/postgres.js";
 import config from "./shared/config/index.js";
 import authRouter from "./services/auth/routes/authRouter.js";
+
 const app = express();
+
+
 app.use(helmet());
 
 app.use(
@@ -63,12 +66,12 @@ app.get("/", (req, res) => {
   );
 });
 
+console.log("AUTH ROUTER MOUNTED");
+
 //api/auth routes
 app.use("/api/auth",authRouter);
 
-app.use((req, res) => {
-  res.status(404).json(ResponceFormatter.error("Endpoints not found ", 404));
-});
+
 
 //if only error comes this middleware will handle it and send the response to the client
 app.use(errorHandler);
@@ -107,6 +110,7 @@ async function startServer() {
       logger.info(`server started on port ${config.port}`);
       logger.info(`Environment:${config.node_env}`);
       logger.info(`API available at :http://localhost:${config.port}`);
+      console.log(`server started on port ${config.port}`);
       // console.log(`server started on port ${config.port}`);
     });
     
