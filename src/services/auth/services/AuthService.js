@@ -1,4 +1,4 @@
-// import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import  SecurityUtils  from "../../../shared/utils/SecurityUtils.js";
 import logger from "../../../shared/config/logger.js";
 import {APPLICATION_ROLES} from "../../../shared/constants/role.js";
@@ -29,6 +29,13 @@ export class AuthService {
     try {
       const existingUser = await this.userRepository.findAll();
 
+//const existingSuperAdmin =
+//   await userRepository.findSuperAdmin();
+
+// if (existingSuperAdmin) {
+//   throw new Error("Super admin already exists");
+// }
+      
       if (existingUser.length > 0 && existingUser) {
         throw new AppError("Super Admin already exists", 409);
       }
