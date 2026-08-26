@@ -1,5 +1,7 @@
 import config from "../config/index.js";
 import jwt from "jsonwebtoken";
+
+//SecurityUtils.js
 class SecurityUtils {
   static PASSWORD_REQUIREMENTS = {
     min_length: parseInt(process.env.PASSWORD_MIN_LENGTH) || 8,
@@ -10,6 +12,7 @@ class SecurityUtils {
       process.env.PASSWORD_REQUIRE_SPECIAL_CHAR === "true" || true,
   };
 
+  // Validate password based on the requirements
   static validatePassword(password) {
     const errors = [];
     const requirements = this.PASSWORD_REQUIREMENTS;
@@ -46,63 +49,94 @@ class SecurityUtils {
       errors.push("Password must contain at least one special character");
     }
 
-    //check for weak passwords
     const weakPasswords = [
-        "password",
-        "123456",
-        "123456789",
-        "qwerty",
-        "abc123",
-        "password1",
-        "111111",
-        "12345678",
-        "iloveyou",
-        "admin",
-      ];
+      // Sequential & Common Patterns
+      "password",
+      "123456",
+      "123456789",
+      "12345678",
+      "12345",
+      "1234567",
+      "1234",
+      "111111",
+      "000000",
+      "123123",
+      "7777777",
 
-      if(weakPasswords.includes(password.toLowerCase()))
-      {
-        errors.push("Password is too weak");
-      }
+      // Keyboard Walks
+      "qwerty",
+      "qwertyuiop",
+      "asdfghjkl",
+      "zxcvbnm",
+      "qazwsx",
+      "1q2w3e4r",
 
-     return {
-            success:errors.length === 0,
-            errors,
-            strength:this.CalculatePasswordStrength(password)
-           }
+      // Common Default Credentials
+      "admin",
+      "administrator",
+      "root",
+      "guest",
+      "user",
+      "default",
+      "pass",
+      "login",
+
+      // Standard Words & Phrases
+      "password1",
+      "password123",
+      "pass1234",
+      "abc123",
+      "iloveyou",
+      "welcome",
+      "monkey",
+      "dragon",
+      "master",
+      "sunshine",
+      "princess",
+      "football",
+      "charlie",
+      "trustno1",
+    ];
+
+    //if the password is in the weak passwords list, add an error message
+    if (weakPasswords.includes(password.toLowerCase())) {
+      errors.push("Password is too weak");
     }
 
-
-  
-
+    return {
+      success: errors.length === 0,
+      errors,
+      strength: this.CalculatePasswordStrength(password),
+    };
+  }
 
   static CalculatePasswordStrength(password) {
-    if(!password)
-    {
-        return "weak";
+    if (!password) {
+      return "weak";
     }
 
     let score = 0;
+    // Check for length
+    if (password.length >= 8) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
 
-    if(password.length>=8) score+=1;
-    if(/[A-Z]/.test(password)) score+=1;
-    if(/[a-z]/.test(password)) score+=1;
-    if(/[0-9]/.test(password)) score+=1;
-    if(/[!@#$%^&*(),.?":{}|<>]/.test(password)) score+=1;
-
-    if(score<=2) return "weak";
-    else if(score===3 || score===4) return "medium";
+    // Determine strength based on score
+    if (score <= 2) return "weak";
+    else if (score === 3 || score === 4) return "medium";
     else return "strong";
-
   }
 
-  static generateToken(user)
-  {
-    const {_id,email,username,role,clientId}=user;
-    const payload={_id,email,username,role,clientId};
-    
+  // Generate JWT token for the user
+  static generateToken(user) {
+    const { _id, email, username, role, clientId } = user;
+    const payload = { _id, email, username, role, clientId };
 
-    return jwt.sign(payload,config.jwt.secret,{expiresIn:config.jwt.expiresIn});
+    return jwt.sign(payload, config.jwt.secret, {
+      expiresIn: config.jwt.expiresIn,
+    });
   }
 }
 
