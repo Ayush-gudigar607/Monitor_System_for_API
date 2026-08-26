@@ -11,6 +11,7 @@ export class AuthController {
     this.authService = authService;
   }
 
+  //This method will onboard a super admin user and return the user object and token
   async OnboardSuperAdmin(req, res, next) {
     try {
       const { username, password, email } = req.body;
@@ -49,6 +50,7 @@ export class AuthController {
     }
   }
 
+  //This method will register a new user and return the user object and token
   async register(req, res, next) {
     try {
       const { username, password, email, role: role } = req.body;
@@ -76,6 +78,7 @@ export class AuthController {
     }
   }
 
+  //This method will login a user and return the user object and token
   async login(req, res, next) {
     try {
       const { username, password } = req.body;
@@ -96,7 +99,8 @@ export class AuthController {
       next(err);
     }
   }
-
+  
+  //This method will get the profile of a user and return the user object
   async getProfile(req, res, next) {
     try {
       const userId = req.user._id;
@@ -115,7 +119,8 @@ export class AuthController {
       next(err);
     }
   }
-
+  
+  //This method will logout a user and clear the authentication token
   async logout(req, res, next) {
     try {
       res.clearCookie("token");
