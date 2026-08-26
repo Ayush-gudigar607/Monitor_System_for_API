@@ -1,4 +1,3 @@
-import { email } from "zod/mini";
 import { isValidRole } from "../../../shared/constants/role.js";
 
 const emailPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
@@ -37,7 +36,7 @@ export const registerSchema = {
   },
   role: {
     required: true,
-    validate: (value) => {
+    custom: (value) => {
       if (!value) return null;
       return isValidRole(value) ? null : "Invalid Role";
     },

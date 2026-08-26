@@ -31,7 +31,7 @@ services:
       retries: 5
 
   mongodb:
-    image: mongo:6.0.6
+    image: mongo:latest
     container_name: api-monitor-mongodb
 
     environment:
@@ -67,6 +67,16 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+
+  
 
   rabbitmq:
     image: rabbitmq:3.11-management
