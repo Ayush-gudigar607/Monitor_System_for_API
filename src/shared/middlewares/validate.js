@@ -35,7 +35,7 @@ const validate = (schema) => (req, res, next) => {
             errors.push(`${field} must be at most ${rules.maxLength} characters long`);
             return;
         }
-        
+
         // Check for custom validation function
         if (rules.custom && typeof rules.custom === "function") {
             const customError = rules.custom(value, body);
@@ -46,10 +46,12 @@ const validate = (schema) => (req, res, next) => {
         }
     });
 
+    // If there are validation errors, respond with a 400 status and the error messages
     if (errors.length > 0) {
         return res.status(400).json(ResponceFormatter.error("Validation Error", 400, errors));
     }
-
+    
+    // If validation passes, proceed to the next middleware or route handler
     return next();
 };
 
