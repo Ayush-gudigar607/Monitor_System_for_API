@@ -8,7 +8,7 @@ class PostgresConnection {
   constructor() {
     this.pool = null;
   }
-
+  //This method will create a new pool if it doesn't exist and return the existing pool if it does
   getPool() {
     if (!this.pool) {
       this.pool = new Pool({
@@ -31,7 +31,7 @@ class PostgresConnection {
     }
     return this.pool;
   }
-
+  //This method will connect to the database and log the connection status
   async connect() {
     try {
       const pool = this.getPool();
@@ -44,7 +44,7 @@ class PostgresConnection {
       throw error;
     }
   }
-
+  //This method will close the pool and log the connection status
   async close()
   {
     if(this.pool)
@@ -54,7 +54,7 @@ class PostgresConnection {
         logger.info("Postgres Pool Closed Successfully");
     }
   }
-
+  //This method will execute a query and log the query and its execution time
   async query(text,params)
   {
     const pool=this.pool;
