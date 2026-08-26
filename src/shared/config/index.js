@@ -1,5 +1,17 @@
 import 'dotenv/config';
 
+const mongoHost = process.env.MONGO_HOST || "localhost";
+const mongoPort = parseInt(process.env.MONGO_PORT, 10) || 27017;
+const mongoDbName = process.env.MONGO_DB_NAME || "api-monitor";
+const mongoUser = process.env.MONGO_ROOT_USERNAME;
+const mongoPassword = process.env.MONGO_ROOT_PASSWORD;
+const mongoAuthSource = process.env.MONGO_AUTH_SOURCE || "admin";
+const hasMongoCredentials = Boolean(mongoUser && mongoPassword);
+
+const computedMongoUri = hasMongoCredentials
+    ? `mongodb://${encodeURIComponent(mongoUser)}:${encodeURIComponent(mongoPassword)}@${mongoHost}:${mongoPort}/${mongoDbName}?authSource=${mongoAuthSource}`
+    : `mongodb://${mongoHost}:${mongoPort}/${mongoDbName}`;
+
 const config = {
 
     node_env: process.env.NODE_ENV || 'development',
@@ -7,8 +19,8 @@ const config = {
     port: parseInt(process.env.PORT ?? process.env.API_PORT, 10) || 5000,
 
     mongo:{
-        uri: process.env.MONGO_URI || 'mongodb://localhost:27017/api-monitor',
-        dbName: process.env.MONGO_DB_NAME || 'api-monitor',
+        uri: process.env.MONGO_URI || computedMongoUri,
+        dbName: mongoDbName,
     },
 
     postgres:{

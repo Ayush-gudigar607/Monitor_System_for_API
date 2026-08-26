@@ -1,3 +1,7 @@
+// import bcrypt from "bcrypt";
+import  SecurityUtils  from "../../../shared/utils/SecurityUtils.js";
+import logger from "../../../shared/config/logger.js";
+import {APPLICATION_ROLES} from "../../../shared/constants/role.js";
 export class AuthService {
   constructor(userRepository) {
     if (!userRepository) {

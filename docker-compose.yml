@@ -131,7 +131,7 @@ services:
       PORT: ${API_PORT}
 
       #MONGODB 
-      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@localhost:27017/${MONGO_DB_NAME}?authSource=admin
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin
       MONGO_DB_NAME: ${MONGO_DB_NAME}
 
       #POSTGRES(1. Database Connection Parameters (Environment Variables)
