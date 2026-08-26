@@ -86,11 +86,11 @@ export class AuthController {
         secure: config.cookie.secure,
         maxAge: config.cookie.expires,
       });
-
+  //token will be deleted after production
       res
         .status(200)
         .json(
-          ResponceFormatter.sucess(user, "User logged in successfully", 200),
+          ResponceFormatter.sucess({user,token}, "User logged in successfully", 200),
         );
     } catch (err) {
       next(err);
@@ -99,8 +99,8 @@ export class AuthController {
 
   async getProfile(req, res, next) {
     try {
-      const userid = req.user._id;
-      const user = await this.authService.getProfile(userid);
+      const userId = req.user._id;
+      const user = await this.authService.getProfile(userId);
 
       res
         .status(200)
