@@ -7,6 +7,7 @@ export default class MongoUserRepository extends BaseRepository {
     super(User);
   }
 
+  //This method will create a new user in the database and return the user object
   async create(userData) {
     try {
       let data = { ...userData };
@@ -32,6 +33,7 @@ export default class MongoUserRepository extends BaseRepository {
     }
   }
 
+  //This method will find a user by their ID and return the user object
   async findById(id) {
     try {
       const user = await this.model.findById(id);
@@ -41,7 +43,7 @@ export default class MongoUserRepository extends BaseRepository {
       throw err;
     }
   }
-
+  //This method will find a user by their username and return the user object
   async findByUsername(username) {
     try {
       const user = await this.model.findOne({ username: username });
@@ -51,7 +53,7 @@ export default class MongoUserRepository extends BaseRepository {
       throw err;
     }
   }
-
+  //This method will find a user by their email and return the user object
   async findByEmail(email) {
     try {
       const user = await this.model.findOne({ email: email });
@@ -62,17 +64,16 @@ export default class MongoUserRepository extends BaseRepository {
     }
   }
 
-  async findAll()
-  {
-    try{
-   const users=await this.model.find({isActive:true}).select("-password");
-   return users;
-    }
-    catch(err)
-    {
-   logger.info(`Error finding all users: ${err.message}`);
-   throw err;
+  //This method will find a user by their role and return the user object
+  async findAll() {
+    try {
+      const users = await this.model
+        .find({ isActive: true })
+        .select("-password");
+      return users;
+    } catch (err) {
+      logger.info(`Error finding all users: ${err.message}`);
+      throw err;
     }
   }
 }
-
