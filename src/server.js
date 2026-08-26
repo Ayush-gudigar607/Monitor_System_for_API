@@ -98,7 +98,6 @@ async function initilizeConnections() {
 
 async function startServer() {
   try {
-    await initilizeConnections();
 
     const server = app.listen(config.port, () => {
       logger.info(`server started on port ${config.port}`);
@@ -106,6 +105,8 @@ async function startServer() {
       logger.info(`API available at :http://localhost:${config.port}`);
       // console.log(`server started on port ${config.port}`);
     });
+    
+     await initilizeConnections();
 
     const gracefulShutdown = async (signal) => {
       logger.info(`Received ${signal}. shut down gracefully...`);

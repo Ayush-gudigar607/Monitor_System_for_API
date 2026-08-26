@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -9,6 +9,7 @@ RUN npm install --production
 COPY . .
 
 RUN mkdir -p logs
+
 
 EXPOSE 5000
 

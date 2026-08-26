@@ -146,7 +146,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST}
+      RABBITMQ_URL: ${RABBITMQ_URL}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
 
       #SECURITY
@@ -158,7 +158,7 @@ services:
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX}
 
     ports:
-      - "${API_HOST_PORT:-5001}:5000"
+      - "${API_PORT}:5000"
 
     volumes:
       - ./logs:/app/logs
