@@ -45,11 +45,16 @@ export class AuthService {
 
   async register(userData) {
     try {
-      const existingUser = await this.userRepository.findByEmail(
-        userData.email,
-      );
-      if (existingUser) {
+      // Check for duplicate email
+      const existingEmail = await this.userRepository.findByEmail(userData.email);
+      if (existingEmail) {
         throw new Error("User with this email already exists");
+      }
+
+      // Check for duplicate username
+      const existingUsername = await this.userRepository.findByUsername(userData.username);
+      if (existingUsername) {
+        throw new Error("User with this username already exists");
       }
 
       const user = await this.userRepository.create(userData);
