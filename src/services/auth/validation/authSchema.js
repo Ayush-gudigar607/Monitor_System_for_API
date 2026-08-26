@@ -2,6 +2,7 @@ import { isValidRole } from "../../../shared/constants/role.js";
 
 const emailPattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
+// Validation schema for onboarding super admin
 export const onboardsuperAdminSchema = {
   username: {
     required: true,
@@ -19,6 +20,7 @@ export const onboardsuperAdminSchema = {
   },
 };
 
+// Validation schema for user registration
 export const registerSchema = {
   username: {
     required: true,
@@ -43,6 +45,7 @@ export const registerSchema = {
   },
 };
 
+// Validation schema for user login
 export const loginSchema = {
     username: {
         required: true,
