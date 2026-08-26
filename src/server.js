@@ -76,16 +76,20 @@ async function initilizeConnections() {
     //connect to mongodb
     await mongodb.connect();
     logger.info("Connected to MongoDb");
+    // console.log("Connected to MongoDb");
 
     //connect to postgres
     await postgres.connect();
     logger.info("Connected to Postgres");
+    // console.log("Connected to Postgres");
 
     //connect to the rabbitmq
     await rabbitmq.connect();
     logger.info("Connected to Rabbitmq");
+    // console.log("Connected to Rabbitmq");
 
     logger.info("All Connections Are Established successfully");
+    // console.log("All Connections Are Established successfully");
   } catch (error) {
     logger.error("Failed to initializing connections", error);
     throw error;
@@ -95,10 +99,12 @@ async function initilizeConnections() {
 async function startServer() {
   try {
     await initilizeConnections();
+
     const server = app.listen(config.port, () => {
       logger.info(`server started on port ${config.port}`);
       logger.info(`Environment:${config.node_env}`);
       logger.info(`API available at :http://localhost:${config.port}`);
+      // console.log(`server started on port ${config.port}`);
     });
 
     const gracefulShutdown = async (signal) => {
