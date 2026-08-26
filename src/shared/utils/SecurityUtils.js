@@ -1,5 +1,5 @@
 import config from "../config/index.js";
-
+import jwt from "jsonwebtoken";
 class SecurityUtils {
   static PASSWORD_REQUIREMENTS = {
     min_length: parseInt(process.env.PASSWORD_MIN_LENGTH) || 8,
