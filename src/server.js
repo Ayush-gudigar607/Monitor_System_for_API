@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`, {
     ip: req.ip,
-    userAgent: req.header["user-agent"], //browser info
+    userAgent: req.get("user-agent"), //browser info
   });
   next();
 });
@@ -67,6 +67,7 @@ app.use((req, res) => {
   res.status(404).json(ResponceFormatter.error("Endpoints not found ", 404));
 });
 
+//if only error comes this middleware will handle it and send the response to the client
 app.use(errorHandler);
 
 async function initilizeConnections() {
