@@ -3,7 +3,8 @@ import 'dotenv/config';
 const config = {
 
     node_env: process.env.NODE_ENV || 'development',
-    port: parseInt(process.env.API_PORT, 10) || 5000,
+    // Docker provides PORT; local .env files commonly use API_PORT.
+    port: parseInt(process.env.PORT ?? process.env.API_PORT, 10) || 5000,
 
     mongo:{
         uri: process.env.MONGO_URI || 'mongodb://localhost:27017/api-monitor',

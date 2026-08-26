@@ -158,7 +158,7 @@ services:
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX}
 
     ports:
-      - "${API_PORT}:5000"
+      - "${API_HOST_PORT:-5001}:5000"
 
     volumes:
       - ./logs:/app/logs

@@ -1,17 +1,14 @@
 import express from "express";
-import dotenv from "dotenv";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import ResponceFormatter from "./shared/utils/ResponceFormatter.js";
 import cors from "cors";
 import logger from "./shared/config/logger.js";
-import errorHabler from "./shared/middlewares/errorHandler.js";
+import errorHandler from "./shared/middlewares/errorHandler.js";
 import mongodb from "./shared/config/mongodb.js";
 import rabbitmq from "./shared/config/rabbitmq.js";
 import postgres from "./shared/config/postgres.js";
 import config from "./shared/config/index.js";
-
-dotenv.config();
 
 const app = express();
 app.use(helmet());
@@ -70,7 +67,7 @@ app.use((req, res) => {
   res.status(404).json(ResponceFormatter.error("Endpoints not found ", 404));
 });
 
-app.use(errorHabler);
+app.use(errorHandler);
 
 async function initilizeConnections() {
   try {
@@ -96,52 +93,51 @@ async function initilizeConnections() {
 }
 
 async function startServer() {
-    try{
-      await initilizeConnections();
-      const server = app.listen(config.port, () => { 
-        logger.info(`server started on port ${config.port}`)
-        logger.info(`Environment:${config.node_env}`);
-        logger.info(`API available at :http://localhost:${config.port}`)
+  try {
+    await initilizeConnections();
+    const server = app.listen(config.port, () => {
+      logger.info(`server started on port ${config.port}`);
+      logger.info(`Environment:${config.node_env}`);
+      logger.info(`API available at :http://localhost:${config.port}`);
+    });
+
+    const gracefulShutdown = async (signal) => {
+      logger.info(`Received ${signal}. shut down gracefully...`);
+      server.close(async () => {
+        logger.info("HTTP server closed successfully");
+        await rabbitmq.close();
+        logger.info("Rabbitmq connection closed successfully");
+        await mongodb.disconnect();
+        logger.info("MongoDB connection closed successfully");
+        await postgres.close();
+        logger.info("Postgres connection closed successfully");
+        process.exit(0);
       });
+      setTimeout(() => {
+        logger.error(
+          "Could not close connections in time, forcefully shutting down",
+        );
+        process.exit(1);
+      }, 10000);
+    };
 
-      const gracefulShutdown = async (signal) => {
-        logger.info(`Received ${signal}. shut down gracefully...`);
-        server.close(async()=>
-        {
-            logger.info("HTTP server closed successfully");
-            await rabbitmq.close();
-            logger.info("Rabbitmq connection closed successfully");
-            await mongodb.disconnect();
-            logger.info("MongoDB connection closed successfully");
-            await postgres.close();
-            logger.info("Postgres connection closed successfully");
-            process.exit(0);
-        });
-        setTimeout(() => {
-            logger.error("Could not close connections in time, forcefully shutting down");
-            process.exit(1);
-        }, 10000);
-      };
+    process.on("SIGINT", gracefulShutdown);
+    process.on("SIGTERM", gracefulShutdown);
 
-        process.on("SIGINT", gracefulShutdown);
-        process.on("SIGTERM", gracefulShutdown);
+    //Handle uncaught exceptions
+    process.on("uncaughtException", (error) => {
+      logger.error("Uncaught Exception:", error);
+      gracefulShutdown("uncaughtException");
+    });
 
-        //Handle uncaught exceptions
-        process.on("uncaughtException", (error) => {
-            logger.error("Uncaught Exception:", error);
-            gracefulShutdown("uncaughtException");
-        });
-
-        process.on("unhandledRejection", (reason, promise) => {
-            logger.error("Unhandled Rejection at:", promise, "reason:", reason);
-            gracefulShutdown("unhandledRejection");
-        });
-    }
-    catch(error)
-    {
-logger.error("Failed to start server",error);
+    process.on("unhandledRejection", (reason, promise) => {
+      logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+      gracefulShutdown("unhandledRejection");
+    });
+  } catch (error) {
+    logger.error("Failed to start server", error);
     process.exit(1);
-    }
+  }
 }
 
 startServer();
