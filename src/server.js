@@ -13,9 +13,9 @@ import authRouter from "./services/auth/routes/authRouter.js";
 
 const app = express();
 
-
 app.use(helmet());
 
+// Enable CORS for all routes
 app.use(
   cors({
     origin: true,
@@ -23,10 +23,12 @@ app.use(
   }),
 );
 
+// Enable cookie parsing middleware
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`, {
     ip: req.ip,
@@ -35,6 +37,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json(
     ResponceFormatter.sucess(
@@ -48,6 +51,7 @@ app.get("/health", (req, res) => {
   );
 });
 
+// Root endpoint
 app.get("/", (req, res) => {
   res.status(200).json(
     ResponceFormatter.sucess({
@@ -66,16 +70,15 @@ app.get("/", (req, res) => {
   );
 });
 
-console.log("AUTH ROUTER MOUNTED");
+// console.log("AUTH ROUTER MOUNTED");
 
 //api/auth routes
-app.use("/api/auth",authRouter);
-
-
+app.use("/api/auth", authRouter);
 
 //if only error comes this middleware will handle it and send the response to the client
 app.use(errorHandler);
 
+// Start the server and initialize connections
 async function initilizeConnections() {
   try {
     logger.info("Connecting to MongoDB...");
@@ -105,7 +108,6 @@ async function initilizeConnections() {
 
 async function startServer() {
   try {
-
     const server = app.listen(config.port, () => {
       logger.info(`server started on port ${config.port}`);
       logger.info(`Environment:${config.node_env}`);
@@ -113,9 +115,11 @@ async function startServer() {
       console.log(`server started on port ${config.port}`);
       // console.log(`server started on port ${config.port}`);
     });
-    
-     await initilizeConnections();
 
+    //call the function to initialize connections
+    await initilizeConnections();
+
+    // Graceful shutdown
     const gracefulShutdown = async (signal) => {
       logger.info(`Received ${signal}. shut down gracefully...`);
       server.close(async () => {
@@ -136,6 +140,7 @@ async function startServer() {
       }, 10000);
     };
 
+    // Handle termination signals
     process.on("SIGINT", gracefulShutdown);
     process.on("SIGTERM", gracefulShutdown);
 
@@ -145,6 +150,7 @@ async function startServer() {
       gracefulShutdown("uncaughtException");
     });
 
+    //Handle unhandled promise rejections
     process.on("unhandledRejection", (reason, promise) => {
       logger.error("Unhandled Rejection at:", promise, "reason:", reason);
       gracefulShutdown("unhandledRejection");
@@ -155,4 +161,5 @@ async function startServer() {
   }
 }
 
+// Start the server
 startServer();
