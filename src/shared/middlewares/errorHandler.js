@@ -24,9 +24,10 @@ const errorHandler=(err,req,res,next)=>
     //duplicate key(MongoDB)
     else if(err.name==="MongoServerError" && err.code===11000)
     {
-        statusCode=400;
-        message="Duplicate key Error";
-        errors=Object.keys(err.keyvalue);
+        statusCode=409;
+        const field = Object.keys(err.keyValue || {})[0] || "field";
+        message = `${field} already exists`;
+        errors = [message];
     }
 
     else if(err.name ==="JsonWebTokenError")
