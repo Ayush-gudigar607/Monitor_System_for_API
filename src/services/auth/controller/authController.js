@@ -1,0 +1,131 @@
+import { APPLICATION_ROLES } from "../../../shared/constants/role.js";
+import ResponceFormatter from "../../../shared/utils/ResponceFormatter.js";
+import config from "../../../shared/config/index.js";
+
+export class AuthController {
+  constructor(authService) {
+    if (!authService) {
+      throw new Error("AuthService instance is required");
+    }
+
+    this.authService = authService;
+  }
+
+  async OnboardSuperAdmin(req, res, next) {
+    try {
+      const { username, password, email } = req.body;
+
+      const SuperAdminData = {
+        username,
+        email,
+        password,
+        role: APPLICATION_ROLES.SUPER_ADMIN,
+      };
+
+      const { user, token } =
+        await this.authService.OnboardSuperAdmin(SuperAdminData);
+
+      if (!user || !token) {
+        throw new Error("Failed to onboard Super Admin");
+      }
+
+      res.cookie("token", token, {
+        httpOnly: config.cookie.httpOnly,
+        secure: config.cookie.secure,
+        maxAge: config.cookie.expires,
+      });
+
+      res
+        .status(201)
+        .json(
+          ResponceFormatter.sucess(
+            user,
+            "super admin created successfully",
+            201,
+          ),
+        );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async register(req, res, next) {
+    try {
+      const { username, password, email, role: role } = req.body;
+
+      const userData = {
+        username,
+        email,
+        password,
+        role: role || APPLICATION_ROLES.CLIENT_ADMIN,
+      };
+
+      const { user, token } = await this.authService.register(userData);
+
+      if (!user || !token) {
+        throw new Error("Failed to register user");
+      }
+
+      res
+        .status(201)
+        .json(
+          ResponceFormatter.sucess(user, "User registered successfully", 201),
+        );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async login(req, res, next) {
+    try {
+      const { username, password } = req.body;
+      const { token, user } = await this.authService.login(username, password);
+
+      res.cookie("token", token, {
+        httpOnly: config.cookie.httpOnly,
+        secure: config.cookie.secure,
+        maxAge: config.cookie.expires,
+      });
+
+      res
+        .status(200)
+        .json(
+          ResponceFormatter.sucess(user, "User logged in successfully", 200),
+        );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getProfile(req, res, next) {
+    try {
+      const userid = req.user._id;
+      const user = await this.authService.getProfile(userid);
+
+      res
+        .status(200)
+        .json(
+          ResponceFormatter.sucess(
+            user,
+            "User profile fetched successfully",
+            200,
+          ),
+        );
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async logout(req, res, next) {
+    try {
+      res.clearCookie("token");
+      res
+        .status(200)
+        .json(
+          ResponceFormatter.sucess(null, "User logged out successfully", 200),
+        );
+    } catch (err) {
+      next(err);
+    }
+  }
+}
