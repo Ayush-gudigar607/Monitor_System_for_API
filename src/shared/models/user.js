@@ -2,8 +2,10 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import SecurityUtils from "../utils/SecurityUtils.js";
 
+//This is the user schema for the user collection in the database. It defines the structure of the user document and its validation rules. The schema also includes pre-save middleware to hash the password before saving it to the database.
 const userSchema = new mongoose.Schema(
   {
+    // Define the fields for the user schema
     username: {
       type: String,
       required: true,
@@ -17,7 +19,7 @@ const userSchema = new mongoose.Schema(
         message: "Please enter a valid username ",
       },
     },
-
+   // Define the email field with validation rules
     email: {
       type: String,
       required: true,
@@ -31,7 +33,7 @@ const userSchema = new mongoose.Schema(
         message: "Please enter a valid email address",
       },
     },
-
+    // Define the password field with validation rules
     password: {
       type: String,
       required: true,
@@ -60,13 +62,13 @@ const userSchema = new mongoose.Schema(
         },
       },
     },
-
+ // Define the role field with allowed values and default value
     role: {
       type: String,
       enum: ["SUPER_ADMIN", "ADMIN", "USER"],
       default: "USER",
     },
-
+// Define the clientId field with a reference to the Client model and a conditional requirement based on the user's role
     clientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Client",
@@ -74,12 +76,12 @@ const userSchema = new mongoose.Schema(
         return this.role !== "SUPER_ADMIN"; //clientId is required for all roles except SUPER_ADMIN
       },
     },
-
+// Define the isActive field to indicate whether the user account is active or not
     isActive: {
       type: Boolean,
       default: true,
     },
-
+// Define the permissions field with default values for each permission
     permissions: {
       canCreateApiKeys: {
         type: Boolean,
@@ -108,6 +110,7 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+// Pre-save middleware to hash the password before saving it to the database
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -120,6 +123,8 @@ userSchema.pre("save", async function (next) {
     return next(err);
   }
 });
+
+// Method to compare the provided password with the hashed password in the database
 
 userSchema.index({ clientId: 1, isActive: 1 });
 userSchema.index({ role: 1 });
