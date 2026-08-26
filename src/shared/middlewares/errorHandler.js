@@ -1,6 +1,7 @@
 import logger from "../config/logger.js";
 import ResponceFormatter from "../utils/ResponceFormatter.js";
 
+//This is the function to handle error
 const errorHandler=(err,req,res,next)=>
 {
     let statusCode=err.statusCode || 500;
@@ -29,19 +30,20 @@ const errorHandler=(err,req,res,next)=>
         message = `${field} already exists`;
         errors = [message];
     }
-
+    //ERROR WILL BE JsonWebTokenError
     else if(err.name ==="JsonWebTokenError")
     {
         statusCode=401;
         message="Invalid token";
     }
-
+    //ERROR WILL BE TOKENEXPIREDERROR
     else if(err.name ==="TokenExpiredError")
     {
         statusCode=401;
         message="Token Expired";
     }
 
+    //log the API ERROR
     logger.error("API ERROR",
         {
             message:err.message,
