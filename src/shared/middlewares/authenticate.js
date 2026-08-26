@@ -1,6 +1,7 @@
 import config from "../config/index.js";
 import ResponceFormatter from "../utils/ResponceFormatter.js";
 import logger from "../config/logger.js"
+import jwt from "jsonwebtoken";
 
 
 const authenticate=(req,res,next)=>
@@ -15,10 +16,9 @@ const authenticate=(req,res,next)=>
         {
             return res.status(401).json(ResponceFormatter.error("Authentication token is required",401))
         }
-
         const decoded =jwt.verify(token,config.jwt.secret);
-        const {userId,username,email,role,clienId}=decoded;
-        req.user={userId,username,email,role,clienId};
+        const {_id,username,email,role,clientId}=decoded;
+        req.user={_id,username,email,role,clientId};
         next();
     } catch (error) {
          logger.error("Authentication error:",{
