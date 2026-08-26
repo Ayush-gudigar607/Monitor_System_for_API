@@ -8,17 +8,17 @@ const errorHandler=(err,req,res,next)=>
     let errors=err.errors || null;
 
     //Invalid json
-    if(err instanceof syntaxError && err.statusCode===400 && "body" in err)
+    if(err instanceof SyntaxError && err.statusCode===400 && "body" in err)
     {
         statusCode=400;
         message="Invalid JSON payload";
     }
 
     //Mongoose validation error
-    else if(err.name==="validationError")
+    else if(err.name==="ValidationError")
         {
             statusCode=400,
-            message="validationError",
+            message="Validation Error",
             errors=Object.values(err.errors).map((e)=>e.message)
     }
     //duplicate key(MongoDB)
@@ -26,7 +26,7 @@ const errorHandler=(err,req,res,next)=>
     {
         statusCode=400;
         message="Duplicate key Error";
-        errors=Object.keys(err.KeyValue);
+        errors=Object.keys(err.keyvalue);
     }
 
     else if(err.name ==="JsonWebTokenError")
@@ -53,7 +53,6 @@ const errorHandler=(err,req,res,next)=>
     );
 
     res.status(statusCode).json(ResponceFormatter.error(message,statusCode,errors))
-
 
 }
 
