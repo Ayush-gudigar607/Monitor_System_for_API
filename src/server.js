@@ -9,7 +9,7 @@ import mongodb from "./shared/config/mongodb.js";
 import rabbitmq from "./shared/config/rabbitmq.js";
 import postgres from "./shared/config/postgres.js";
 import config from "./shared/config/index.js";
-
+import authRouter from "./services/auth/routes/authRouter.js";
 const app = express();
 app.use(helmet());
 
@@ -62,6 +62,9 @@ app.get("/", (req, res) => {
     }),
   );
 });
+
+//api/auth routes
+app.use("/api/auth",authRouter);
 
 app.use((req, res) => {
   res.status(404).json(ResponceFormatter.error("Endpoints not found ", 404));
