@@ -17,17 +17,17 @@ export default class MongoUserRepository extends BaseRepository {
           canViewAnalytics: true,
           canExportData: true,
         };
-
-        const user = new this.model(data);
-        await user.save();
-
-        logger.info(
-          `Super Admin user created with username: ${user.username} and email: ${user.email}`,
-        );
-        return user;
       }
+
+      const user = new this.model(data);
+      await user.save();
+
+      logger.info(
+        `User created with username: ${user.username} and email: ${user.email}`,
+      );
+      return user;
     } catch (err) {
-      logger.info(`Error creating user: ${err.message}`);
+      logger.error(`Error creating user: ${err.message}`);
       throw err;
     }
   }
