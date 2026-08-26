@@ -37,7 +37,7 @@ class RabbitMqConnection {
         this.channel = await this.connection.createChannel();
 
         //creating key
-        const dlqName = `${config.rabbitmq.queueName}.dlq`;
+        const dlqName = `${config.rabbitmq.queue}.dlq`;
 
         //DL QUEUE
         await this.channel.assertQueue(dlqName, {
@@ -45,7 +45,7 @@ class RabbitMqConnection {
         });
 
         //normal queue
-        await this.channel.assertQueue(config.rabbitmq.queueName, {
+        await this.channel.assertQueue(config.rabbitmq.queue, {
           durable: true,
           arguments: {
             "x-dead-letter-exchange": "",
@@ -71,12 +71,14 @@ class RabbitMqConnection {
             this.channel=null;
         })
 
-        this.isConnecting=false;
         return this.channel;
 
       } catch (error) {
         logger.error("Error connecting to RabbitMQ:", error);
-        this.isConnecting=false;
+        throw error;
+      }
+      finally {
+        this.isConnecting = false;
       }
     }
   }
