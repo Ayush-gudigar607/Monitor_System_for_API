@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import  SecurityUtils  from "../../../shared/utils/SecurityUtils.js";
+import SecurityUtils from "../../../shared/utils/SecurityUtils.js";
 import logger from "../../../shared/config/logger.js";
-import {APPLICATION_ROLES} from "../../../shared/constants/role.js";
+import { APPLICATION_ROLES } from "../../../shared/constants/role.js";
 import AppError from "../../../shared/utils/AppError.js";
 export class AuthService {
   constructor(userRepository) {
@@ -11,6 +11,7 @@ export class AuthService {
     this.userRepository = userRepository;
   }
 
+  //This method will format the user object by removing sensitive information like the password before returning it
   formateResponce(user) {
     if (!user) {
       throw new Error("User object is required");
@@ -21,25 +22,29 @@ export class AuthService {
     return userobject;
   }
 
+  //This method will compare the plain password with the hashed password and return a boolean indicating whether they match
   comparePassword(plainPassword, hashedPassword) {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
+  //This method will onboard a super admin user and return the user object and token
   async OnboardSuperAdmin(SuperAdminData) {
     try {
       const existingUser = await this.userRepository.findAll();
 
-//const existingSuperAdmin =
-//   await userRepository.findSuperAdmin();
+      //const existingSuperAdmin =
+      //   await userRepository.findSuperAdmin();
 
-// if (existingSuperAdmin) {
-//   throw new Error("Super admin already exists");
-// }
-      
+      // if (existingSuperAdmin) {
+      //   throw new Error("Super admin already exists");
+      // }
+
+      //This will check if the existing user array has any user with the role of SUPER_ADMIN, if it does then it will throw an error
       if (existingUser.length > 0 && existingUser) {
         throw new AppError("Super Admin already exists", 409);
       }
 
+      //This will create a new super admin user in the database and generate a token for the user
       const user = await this.userRepository.create(SuperAdminData);
       const token = SecurityUtils.generateToken(user);
 
@@ -51,16 +56,21 @@ export class AuthService {
     }
   }
 
+  //This method will register a new user and return the user object and token
   async register(userData) {
     try {
       // Check for duplicate email
-      const existingEmail = await this.userRepository.findByEmail(userData.email);
+      const existingEmail = await this.userRepository.findByEmail(
+        userData.email,
+      );
       if (existingEmail) {
         throw new AppError("User with this email already exists", 409);
       }
 
       // Check for duplicate username
-      const existingUsername = await this.userRepository.findByUsername(userData.username);
+      const existingUsername = await this.userRepository.findByUsername(
+        userData.username,
+      );
       if (existingUsername) {
         throw new AppError("User with this username already exists", 409);
       }
@@ -76,6 +86,7 @@ export class AuthService {
     }
   }
 
+  //This method will login a user and return the user object and token
   async login(username, password) {
     try {
       const user = await this.userRepository.findByUsername(username);
@@ -104,6 +115,7 @@ export class AuthService {
     }
   }
 
+  //This method will get the profile of a user by their userId and return the user object
   async getProfile(userId) {
     try {
       const user = await this.userRepository.findById(userId);
@@ -118,6 +130,7 @@ export class AuthService {
     }
   }
 
+  //This method will check if a user has super admin permissions by their userId and return a boolean indicating whether they have the permissions
   async checkSuperAdminPermissions(userId) {
     try {
       const user = await this.userRepository.findById(userId);
