@@ -1,4 +1,4 @@
-import BaseApiKeysRepository from "./BaseApiKeysRepository";
+import BaseApiKeysRepository from "./BaseApiKeysRepository.js";
 import ApiKey from "../../../shared/models/ApiKey.js";
 import logger from "../../../shared/config/logger.js";
 
@@ -9,11 +9,14 @@ class MongoApiKeyRepository extends BaseApiKeysRepository {
 
   async create(apiKeyData) {
     try {
-      const apikey = new this.model(apiKeyData);
-      return await apikey.save();
+      const apiKey = new this.model(apiKeyData);
+      await apiKey.save();
 
-      logger.info("API key created successfully");
-      return apikey;
+      logger.info("API key created successfully", {
+        apiKeyId: apiKey._id,
+      });
+
+      return apiKey;
     } catch (err) {
       logger.error(`Error creating API key: ${err.message}`);
       throw err;
@@ -34,7 +37,6 @@ class MongoApiKeyRepository extends BaseApiKeysRepository {
         return null;
       }
 
-      logger.info(`API key found for keyValue: ${keyValue}`);
       return apiKey;
     } catch (err) {
       logger.error(`Error finding API key by keyValue: ${err.message}`);
@@ -56,22 +58,19 @@ class MongoApiKeyRepository extends BaseApiKeysRepository {
     }
   }
 
-  async countByClientId(clientId,filters = {}) {
+  async countByClientId(clientId, filters = {}) {
     {
-        try
-        {
-           const query = { clientId, ...filters };
-           const count =await this.model.countDocuments(query);
-           logger.info(`Counted ${count} API keys for clientId: ${clientId}`);
-           return count;
-        }
-        catch(err)
-        {
-            logger.error(`Error counting API keys by clientId: ${err.message}`);
-            throw err;
-        }
+      try {
+        const query = { clientId, ...filters };
+        const count = await this.model.countDocuments(query);
+        logger.info(`Counted ${count} API keys for clientId: ${clientId}`);
+        return count;
+      } catch (err) {
+        logger.error(`Error counting API keys by clientId: ${err.message}`);
+        throw err;
+      }
     }
-}
+  }
 }
 
-export default  new MongoApiKeyRepository;
+export default new MongoApiKeyRepository();
