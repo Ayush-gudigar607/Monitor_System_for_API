@@ -87,4 +87,27 @@ export class ClientController {
       next(err);
     }
   }
+
+  async getApiKeys(req, res, next) {
+    {
+        try{
+  const { clientId } = req.params;
+  const apiKeys = await this.clientService.getApiKeys(clientId, req.user);
+  if(!apiKeys || apiKeys.length === 0){
+    return res
+    .status(404).json(
+      ResponseFormatter.error("No API keys found for this client", 404),
+    );
+  }
+  return res
+    .status(200)
+    .json(
+      ResponseFormatter.sucess(apiKeys, "API keys fetched successfully", 200),
+    );
+        }
+        catch(err){
+          next(err);
+        }
+    }
+}
 }
