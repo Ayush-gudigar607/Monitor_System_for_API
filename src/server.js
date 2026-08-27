@@ -75,6 +75,9 @@ app.get("/", (req, res) => {
 //api/auth routes
 app.use("/api/auth", authRouter);
 
+//api/admin/client/onboard
+app.use("/api",clientRouter)
+
 //if only error comes this middleware will handle it and send the response to the client
 app.use(errorHandler);
 
