@@ -42,17 +42,49 @@ export class ClientController {
   }
 
   async createClientUser(req, res, next) {
-    try{
-        const {clientId} = req.params;
-        const user=await this.clientService.createClientUser(clientId, req.body, req.user);
-        
-        if(!user){
-            throw new Error("Failed to create client user");
-        }
-        return res.status(201).json(ResponseFormatter.sucess(user, "Client user created successfully", 201));
+    try {
+      const { clientId } = req.params;
+      const user = await this.clientService.createClientUser(
+        clientId,
+        req.body,
+        req.user,
+      );
+
+      if (!user) {
+        throw new Error("Failed to create client user");
+      }
+      return res
+        .status(201)
+        .json(
+          ResponseFormatter.sucess(
+            user,
+            "Client user created successfully",
+            201,
+          ),
+        );
+    } catch (err) {
+      next(err);
     }
-    catch (err) {
-        next(err);
+  }
+
+  async createApiKey(req, res, next) {
+    try {
+      const { clientId } = req.params;
+      const apiKey = await this.clientService.createApiKey(
+        clientId,
+        req.body,
+        req.user,
+      );
+      if (!apiKey) {
+        throw new Error("Failed to create API key");
+      }
+      return res
+        .status(201)
+        .json(
+          ResponseFormatter.sucess(apiKey, "API key created successfully", 201),
+        );
+    } catch (err) {
+      next(err);
     }
-}
+  }
 }
