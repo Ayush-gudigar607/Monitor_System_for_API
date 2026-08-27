@@ -4,7 +4,8 @@ import {
 } from "../../../shared/constants/role.js";
 import logger from "../../../shared/config/logger.js";
 import AppError from "../../../shared/utils/AppError.js";
-
+import crypto from "crypto";
+import { v4 as uuidv4 } from "uuid";
 export class ClientService {
   constructor(dependencies) {
     if (!dependencies) {
@@ -28,14 +29,45 @@ export class ClientService {
     this.userRepository = dependencies.userRepository;
   }
 
-  formateClientForResponse(data) {
-    if (!data) {
-      return null;
-    }
-    const userObject = user.toObject() ? user.toObject() : { ...user };
-    delete userObject.password;
-    return userObject;
+ formatClientForResponse(client) {
+  if (!client) {
+    return null;
   }
+
+  const object = client.toObject
+    ? client.toObject()
+    : { ...client };
+
+  return object;
+}
+
+formatUserForResponse(user) {
+  if (!user) {
+    return null;
+  }
+
+  const object = user.toObject
+    ? user.toObject()
+    : { ...user };
+
+  delete object.password;
+
+  return object;
+}
+
+formatApiKeyForResponse(apiKey) {
+  if (!apiKey) {
+    return null;
+  }
+
+  const object = apiKey.toObject
+    ? apiKey.toObject()
+    : { ...apiKey };
+
+  delete object.keyValue;
+
+  return object;
+}
 
   generateSlug(name) {
     return name
@@ -47,12 +79,18 @@ export class ClientService {
   }
 
   canUserAccessClient(user, clientId) {
+    if (!user || !clientId) {
+      return false;
+    }
+
     if (user.role === APPLICATION_ROLES.SUPER_ADMIN) {
       return true;
     }
 
-    return user.clientId && user.clientId.toString() === clientId.toString();
-  }
+ return (
+    user.clientId &&
+    user.clientId.toString() === clientId.toString()
+  );  }
 
   generateApiKeyValue() {
     const prefix = "api_";
@@ -65,7 +103,7 @@ export class ClientService {
       const { name, email, description, website } = clientData;
 
       if (!name || !email) {
-        throw new Error("Name and email are required to create a client");
+        throw new AppError("Name and email are required to create a client", 400);
       }
 
       const slug = this.generateSlug(name);
@@ -73,7 +111,7 @@ export class ClientService {
       const existingClient = await this.clientRepository.findBySlug(slug);
 
       if (existingClient) {
-        throw new Error(`Client with name ${name} already exists`);
+        throw new AppError("Client with this name already exists", 400);
       }
 
       const newClient = await this.clientRepository.create({
@@ -167,7 +205,7 @@ export class ClientService {
         clientId: newUser.clientId,
       });
 
-      return this.formateClientForResponse(newUser);
+      return this.formatUserForResponse(newUser);
     } catch (err) {
       logger.error(`Error creating client user: ${err.message}`);
       throw err;
@@ -210,8 +248,9 @@ export class ClientService {
         throw new AppError("Name is required to create an API key", 400);
       }
 
-      const keyValue = uuidv4(); //generate a unique key value
+        const keyId = uuidv4();
 
+        const keyValue = this.generateApiKeyValue();
       if (!keyValue) {
         throw new AppError("Failed to generate API key value", 500);
       }
@@ -232,15 +271,17 @@ export class ClientService {
       });
 
       logger.info("API key created in MongoDB with ID:", apiKey._id);
+      
+    //   return apiKey;
 
-      return this.formateClientForResponse(apiKey);
+      return this.formatApiKeyForResponse(apiKey);
     } catch (err) {
       logger.error(`Error creating API key: ${err.message}`);
       throw err;
     }
   }
 
-  async getClientByApiKey(clientId, user) {
+  async getClientApiKeys(clientId, user) {
     try {
       if (!this.canUserAccessClient(user, clientId)) {
         throw new AppError(
