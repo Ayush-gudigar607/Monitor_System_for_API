@@ -90,6 +90,7 @@ export class AuthController {
         maxAge: config.cookie.expires,
       });
   //token will be deleted after production
+
       res
         .status(200)
         .json(
@@ -100,7 +101,8 @@ export class AuthController {
     }
   }
   
-  //This method will get the profile of a user and return the user object
+
+//This method will get the profile of a user and return the user object
   async getProfile(req, res, next) {
     try {
       const userId = req.user._id;
