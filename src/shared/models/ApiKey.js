@@ -9,7 +9,7 @@ const apiKeySchema=new mongoose.Schema(
             unique:true,
             index:true,
         },
-        KeyValue:{
+        keyValue:{
             type:String,
             required:true,
             unique:true,
@@ -99,7 +99,7 @@ const apiKeySchema=new mongoose.Schema(
         type:Date,
         default:()=>
         {
-            const days=paseInt(process.env.API_KEY_EXPIRATION_DAYS) || 90;
+            const days = parseInt(process.env.API_KEY_EXPIRATION_DAYS, 10) || 90;
             return new Date(Date.now() + days * 24 * 60 * 60 * 1000);  // Set expiration date to 90 days from now by default(for example 90 days from now the key will expire)
         }
         },
