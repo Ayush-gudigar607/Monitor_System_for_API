@@ -101,6 +101,8 @@ formatApiKeyForResponse(apiKey) {
   async createClient(clientData, adminUser) {
     try {
       const { name, email, description, website } = clientData;
+       
+      // console.log("Creating client with data:", clientData, "by admin user:", adminUser);
 
       if (!name || !email) {
         throw new AppError("Name and email are required to create a client", 400);
@@ -127,7 +129,7 @@ formatApiKeyForResponse(apiKey) {
         throw new Error("Failed to create client");
       }
 
-      return this.formateClientForResponse(newClient);
+      return this.formatClientForResponse(newClient);
     } catch (err) {
       logger.error(`Error creating client: ${err.message}`);
       throw err;
