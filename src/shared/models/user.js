@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import SecurityUtils from "../utils/SecurityUtils.js";
+import { APPLICATION_ROLES } from "../constants/role.js";
 
 //This is the user schema for the user collection in the database. It defines the structure of the user document and its validation rules. The schema also includes pre-save middleware to hash the password before saving it to the database.
 const userSchema = new mongoose.Schema(
@@ -14,9 +15,9 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       validate: {
         validator: function (username) {
-          return /^[a-zA-Z0-9_-]+$/.test(username); //test the regex for valid username (alphanumeric, underscores, hyphens)
+          return /^[a-zA-Z0-9_-]+(?: [a-zA-Z0-9_-]+)*$/.test(username);
         },
-        message: "Please enter a valid username ",
+        message: "Please enter a valid username using letters, numbers, spaces, underscores, or hyphens",
       },
     },
    // Define the email field with validation rules
@@ -65,8 +66,8 @@ const userSchema = new mongoose.Schema(
  // Define the role field with allowed values and default value
     role: {
       type: String,
-      enum: ["SUPER_ADMIN", "ADMIN", "USER"],
-      default: "USER",
+      enum: Object.values(APPLICATION_ROLES),
+      default: APPLICATION_ROLES.CLIENT_VIEWER,
     },
 // Define the clientId field with a reference to the Client model and a conditional requirement based on the user's role
     clientId: {
