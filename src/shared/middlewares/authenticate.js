@@ -20,6 +20,7 @@ const authenticate = (req, res, next) => {
     const { _id, username, email, role, clientId } = decoded;
     //assign the decoded user information to req.user for further use in the request lifecycle
     req.user = { _id, username, email, role, clientId };
+    // console.log("Authenticated user:", req.user);
     next();
   } catch (error) {
     logger.error("Authentication error:", {
