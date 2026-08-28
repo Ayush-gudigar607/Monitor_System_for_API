@@ -13,6 +13,7 @@ export default class MongoUserRepository extends BaseRepository {
       let data = { ...userData };
       if (data.role === "SUPER_ADMIN" && !data.permissions) {
         data.permissions = {
+          //important
           canCreateApiKeys: true,
           canManageUsers: true,
           canViewAnalytics: true,
