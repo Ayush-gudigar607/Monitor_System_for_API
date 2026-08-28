@@ -10,7 +10,7 @@ import rabbitmq from "./shared/config/rabbitmq.js";
 import postgres from "./shared/config/postgres.js";
 import config from "./shared/config/index.js";
 import authRouter from "./services/auth/routes/authRouter.js";
-
+import clientRouter from "./services/client/routes/clientRouter.js";
 const app = express();
 
 app.use(helmet());
