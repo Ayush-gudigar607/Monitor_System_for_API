@@ -1,8 +1,8 @@
 import MongoUserRepository from "../../auth/repository/UserRepository.js";
-import MongoApiKeyRepository from "../repository/ApiKeyRepository.js"
+import MongoApiKeyRepository from "../repository/ApiKeyRepository.js";
 import MongoClientRepository from "../repository/ClientRepository.js";
-import {clientService} from "../services/ClientService.js";
-import {clientController} from "../controllers/ClientController.js";
+import { ClientService } from "../services/ClientService.js";
+import { ClientController } from "../controllers/ClientController.js";
 import authContainer from "../../auth/dependencies/Dependencies.js";
 
 class container
@@ -10,13 +10,14 @@ class container
     static init()
     {
         const repositories = {
-            clientRepository: new MongoClientRepository(),
-            apiKeyRepository: new MongoApiKeyRepository(),
+            // These modules export initialized repository instances.
+            clientRepository: MongoClientRepository,
+            apiKeyRepository: MongoApiKeyRepository,
             userRepository: new MongoUserRepository(),
         };
 
             const services={
-        clientService:new clientService({
+        clientService:new ClientService({
             clientRepository:repositories.clientRepository,
             apiKeyRepository:repositories.apiKeyRepository,
             userRepository:repositories.userRepository
@@ -24,7 +25,7 @@ class container
     };
 
     const controllers={
-        clientController:new clientController(services.clientService,authContainer.services.authService)
+        clientController:new ClientController(services.clientService,authContainer.services.authService)
     };
 
     return {
