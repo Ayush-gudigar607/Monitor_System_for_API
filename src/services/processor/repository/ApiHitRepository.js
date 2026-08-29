@@ -66,4 +66,23 @@ export class ApiHitRepository extends BaseRepository {
       throw err;
     }
   }
+
+  async deleteOldHits(beforeData) {
+    try {
+      const results = await this.model.deleteMany({
+        timestamp: { $lt: beforeData },
+      });
+      if (!results) {
+        this.logger.info("No API hits found for the given filter");
+        return 0;
+      }
+      this.logger.info(
+        `Deleted ${results.deletedCount} API hits older than ${beforeData}`,
+      );
+      return results.deletedCount;
+    } catch (err) {
+      this.logger.error(`Error deleting old API hits: ${err.message}`);
+      throw err;
+    }
+  }
 }
