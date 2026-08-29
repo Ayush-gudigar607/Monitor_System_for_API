@@ -32,4 +32,24 @@ export class ApiHitRepository extends BaseRepository {
       throw err;
     }
   }
+
+  async find(filter = {}, options = {}) {
+    try {
+      const { limit = 100, skip = 0, sort = { timestamp: -1 } } = options;
+      const hits = await this.model
+        .find(filter)
+        .limit(limit)
+        .skip(skip)
+        .sort(sort)
+        .lean();
+      if (!hits) {
+        this.logger.info("No API hits found for the given filter");
+        return [];
+      }
+      return hits;
+    } catch (err) {
+      this.logger.error(`Error finding API hits: ${err.message}`);
+      throw err;
+    }
+  }
 }
