@@ -52,4 +52,18 @@ export class ApiHitRepository extends BaseRepository {
       throw err;
     }
   }
+
+  async count(filter = {}) {
+    try {
+      const count = await this.model.countDocuments(filter);
+      if (!count) {
+        this.logger.info("No API hits found for the given filter");
+        return 0;
+      }
+      return count;
+    } catch (err) {
+      this.logger.error(`Error counting API hits: ${err.message}`);
+      throw err;
+    }
+  }
 }
