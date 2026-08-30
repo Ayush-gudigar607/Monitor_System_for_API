@@ -8,8 +8,12 @@ export class EventProducer {
     retryStrategy,
     logger,
     queueName,
+<<<<<<< HEAD
   }) 
   {
+=======
+  }) {
+>>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
     if (!channelManager) throw new Error("channelManager is required");
     if (!circuitBreaker) throw new Error("circuitBreaker is required");
     if (!retryStrategy) throw new Error("retryStrategy is required");
@@ -127,7 +131,11 @@ export class EventProducer {
       throw error;
     }
 
+<<<<<<< HEAD
     if (!this.circuitBreaker.allowedRequest()) {
+=======
+    if (!this.circuitBreaker.allowRequest()) {
+>>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
       const error = new Error(
         "Circuit breaker is open, cannot publish new events",
       );
@@ -200,7 +208,11 @@ export class EventProducer {
               attempt: attempt + 1,
             },
           );
+<<<<<<< HEAD
           //"The event was NOT published because the failure should not be retried."
+=======
+
+>>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
           return false;
         }
 
