@@ -8,7 +8,8 @@ export class EventProducer {
     retryStrategy,
     logger,
     queueName,
-  }) {
+  }) 
+  {
     if (!channelManager) throw new Error("channelManager is required");
     if (!circuitBreaker) throw new Error("circuitBreaker is required");
     if (!retryStrategy) throw new Error("retryStrategy is required");
@@ -199,7 +200,7 @@ export class EventProducer {
               attempt: attempt + 1,
             },
           );
-
+          //"The event was NOT published because the failure should not be retried."
           return false;
         }
 
