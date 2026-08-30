@@ -11,7 +11,7 @@ export class CircuitBreaker {
     this.halfOpenMaxAttempts = opts.halfOpenMaxAttempts || 2;
     this.logger = opts.logger || console;
 
-    this._state = Circuitstate.CLOSED;
+    this._state = CircuitState.CLOSED;
     this._failures = 0;
     this._halfOpenAttempts = 0;
     this._halfOpenSuccesses = 0;

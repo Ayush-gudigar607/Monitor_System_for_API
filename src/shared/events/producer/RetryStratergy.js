@@ -53,6 +53,7 @@ export class RetryStrategy {
    wait(attempt)
    {
     const ms=this.delay(attempt);
+    // Return a promise that resolves after the calculated delay
     return new Promise(resolve=>setTimeout(resolve,ms));
    }
 }
