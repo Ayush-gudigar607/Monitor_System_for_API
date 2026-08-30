@@ -18,6 +18,11 @@ export class CircuitBreaker {
     this._lastfailureTime = 0;
   }
 
+
+  /**
+   * Checks if the cooldown period has elapsed.
+    * @returns {boolean} True if the cooldown period has elapsed, false otherwise.
+    */
   _coolDownElapsed() {
     return new Date() - this._lastfailureTime > this.coolDownMs;
   }
@@ -51,7 +56,7 @@ export class CircuitBreaker {
         });   
      }
 
-     get state() {
+     getstate() {
         if (this._state === CircuitState.OPEN && this._coolDownElapsed()) {
             this._transitionTo(CircuitState.HALF_OPEN);
         }
@@ -60,7 +65,7 @@ export class CircuitBreaker {
 
     allowedRequest()
     {
-        const currentState=this.state;
+        const currentState=this.getstate();
 
         if(currentState===CircuitState.CLOSED) return true;
 
