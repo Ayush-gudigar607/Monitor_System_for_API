@@ -1,5 +1,5 @@
 import { EVENT_TYPES } from "../eventContracts.js";
-import { isRetryable as checkRetryable } from "./RetryStratergy.js";
+import { isRetryable as checkRetryable } from "./RetryStrategy.js";
 
 export class EventProducer {
   constructor({
@@ -183,7 +183,7 @@ export class EventProducer {
     // 2. Check circuit breaker
     // --------------------------------------------------
 
-    if (!this.circuitBreaker.allowRequest()) {
+    if (!this.circuitBreaker.allowedRequest()) {
       const error = new Error(
         "Circuit breaker is open, cannot publish new events"
       );
