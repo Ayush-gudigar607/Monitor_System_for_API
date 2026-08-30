@@ -7,6 +7,7 @@ export class ConformChannelManager extends EventEmitter {
     this.logger = logger || console;
     this.channel = null;
     this._connecting = false;
+    this._connectWaiters = [];
   }
 
   async getChannel() {
@@ -48,7 +49,7 @@ export class ConformChannelManager extends EventEmitter {
       });
 
       conformChannel.on("error", (err) => {
-        this._logger.error("Conform channel error:", {
+        this.logger.error("Conform channel error:", {
           error: err.message,
           stack: err.stack,
           code: err.code,
@@ -61,11 +62,11 @@ export class ConformChannelManager extends EventEmitter {
       this.logger.info("conform channel created successfully");
 
       //for the waiters
-      for (const waiter of this._connectWaiters) w.resolve(conformChannel);
+      for (const waiter of this._connectWaiters) waiter.resolve(conformChannel);
       this._connectWaiters = [];
       return conformChannel;
     } catch (err) {
-      for (const waiter of this._connectWaiters) w.reject(err);
+      for (const waiter of this._connectWaiters) waiter.reject(err);
       this._connectWaiters = [];
       this.logger.error("Error creating conform channel", {
         error: err.message,
