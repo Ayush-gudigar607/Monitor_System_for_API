@@ -1,5 +1,5 @@
 import { EVENT_TYPES } from "../eventContracts.js";
-import { isRetryable } from "./RetryStratergy.js";
+import { isRetryable as checkRetryable } from "./RetryStratergy.js";
 
 export class EventProducer {
   constructor({
@@ -8,17 +8,26 @@ export class EventProducer {
     retryStrategy,
     logger,
     queueName,
-<<<<<<< HEAD
-  }) 
-  {
-=======
   }) {
->>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
-    if (!channelManager) throw new Error("channelManager is required");
-    if (!circuitBreaker) throw new Error("circuitBreaker is required");
-    if (!retryStrategy) throw new Error("retryStrategy is required");
-    if (!logger) throw new Error("logger is required");
-    if (!queueName) throw new Error("queueName is required");
+    if (!channelManager) {
+      throw new Error("channelManager is required");
+    }
+
+    if (!circuitBreaker) {
+      throw new Error("circuitBreaker is required");
+    }
+
+    if (!retryStrategy) {
+      throw new Error("retryStrategy is required");
+    }
+
+    if (!logger) {
+      throw new Error("logger is required");
+    }
+
+    if (!queueName) {
+      throw new Error("queueName is required");
+    }
 
     this.channelManager = channelManager;
     this.circuitBreaker = circuitBreaker;
@@ -35,13 +44,17 @@ export class EventProducer {
     this._shutdown = false;
   }
 
-  //track system health
+  // Track system health
   _incrementMetric(metric) {
     this.metrics[metric] = (this.metrics[metric] || 0) + 1;
   }
 
-  async publish(eventData, { correlationId, attempt }) {
+  /**
+   * Publish a single message to RabbitMQ
+   */
+  async publish(eventData, { correlationId, attempt = 0 }) {
     const channel = await this.channelManager.getChannel();
+
     if (!channel) {
       this.logger.error("No channel available for publishing");
       throw new Error("No channel available for publishing");
@@ -50,23 +63,35 @@ export class EventProducer {
     const message = {
       type: EVENT_TYPES.API_HIT,
       data: eventData,
-      publihsedAt: new Date().toISOString(),
+      publishedAt: new Date().toISOString(),
       attempt: attempt + 1,
     };
 
-    //convert into buffer
-
+    // Convert message to Buffer
     const messageBuffer = Buffer.from(JSON.stringify(message));
 
     const publishOptions = {
       persistent: true,
       contentType: "application/json",
       messageId: eventData.eventId,
-      correlationId: correlationId,
-      timeStamp: Math.floor(Date.now() / 1000),
+      correlationId,
+      timestamp: Math.floor(Date.now() / 1000),
     };
 
     return new Promise((resolve, reject) => {
+      const onDrain = () => {
+        channel.removeListener("drain", onDrain);
+
+        this.logger.info(
+          "Channel buffer drained, resuming publishing",
+          {
+            eventId: eventData.eventId,
+            correlationId,
+            queueName: this.queueName,
+          }
+        );
+      };
+
       const written = channel.publish(
         "",
         this.queueName,
@@ -74,157 +99,233 @@ export class EventProducer {
         publishOptions,
         (err) => {
           if (err) {
+            channel.removeListener("drain", onDrain);
+
             return reject(
-              new Error(`Failed to publish message: ${err.message}`),
+              new Error(`Failed to publish message: ${err.message}`)
             );
           }
+
+          channel.removeListener("drain", onDrain);
           resolve();
-        },
+        }
       );
 
       if (!written) {
-        this.logger.warn("Channel buffer is full, waiting for drain event", {
-          eventId: eventData.eventId,
-          correlationId: correlationId,
-          queueName: this.queueName,
-        });
-      }
+        this.logger.warn(
+          "Channel buffer is full, waiting for drain event",
+          {
+            eventId: eventData.eventId,
+            correlationId,
+            queueName: this.queueName,
+          }
+        );
 
-      const OnDrain = () => {
-        channel.removeListener("drain", OnDrain);
-        this.logger.info("Channel buffer drained, resuming publishing", {
-          eventId: eventData.eventId,
-          correlationId: correlationId,
-          queueName: this.queueName,
-        });
-      };
-      channel.on("drain", OnDrain);
+        channel.on("drain", onDrain);
+      }
     });
   }
 
+  /**
+   * Shutdown EventProducer
+   */
   async shutDown() {
+    if (this._shutdown) {
+      return;
+    }
+
     this._shutdown = true;
+
     this.logger.info("Shutting down EventProducer");
+
     await this.channelManager.close();
+
     this.logger.info("EventProducer shutdown complete");
   }
 
+  /**
+   * Get producer status
+   */
   async getStatus() {
     return {
       metrics: { ...this.metrics },
       circuitBreakerState: this.circuitBreaker.snapshot(),
-      // channelStatus:this.channelManager.getStatus(),
     };
   }
 
+  /**
+   * Publish API hit event with retry and circuit breaker
+   */
   async publishApiHit(eventData, opts = {}) {
+    // --------------------------------------------------
+    // 1. Check shutdown state
+    // --------------------------------------------------
+
     if (this._shutdown) {
       const error = new Error(
-        "EventProducer is shutting down, cannot publish new events",
+        "EventProducer is shutting down, cannot publish new events"
       );
-      const code = "SHUTDOWN";
-      this.logger.warn(`[EventProducer] publish rejected-shutting down`, {
-        eventId: eventData.eventId,
-        queueName: this.queueName,
-      });
+
+      error.code = "SHUTDOWN";
+
+      this.logger.warn(
+        "[EventProducer] Publish rejected - shutting down",
+        {
+          eventId: eventData.eventId,
+          queueName: this.queueName,
+        }
+      );
 
       throw error;
     }
 
-<<<<<<< HEAD
-    if (!this.circuitBreaker.allowedRequest()) {
-=======
+    // --------------------------------------------------
+    // 2. Check circuit breaker
+    // --------------------------------------------------
+
     if (!this.circuitBreaker.allowRequest()) {
->>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
       const error = new Error(
-        "Circuit breaker is open, cannot publish new events",
+        "Circuit breaker is open, cannot publish new events"
       );
+
       error.code = "CIRCUIT_BREAKER_OPEN";
+
       this.logger.warn(
-        `[EventProducer] publish rejected-circuit breaker open`,
+        "[EventProducer] Publish rejected - circuit breaker open",
         {
           eventId: eventData.eventId,
           queueName: this.queueName,
-        },
+        }
       );
+
       return false;
     }
 
+    // --------------------------------------------------
+    // 3. Create correlation ID
+    // --------------------------------------------------
+
     const correlationId =
       opts.correlationId ||
-      `event-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      `event-${Date.now()}-${Math.random()
+        .toString(16)
+        .slice(2)}`;
+
     const startMs = Date.now();
+
     let attempt = 0;
+
+    // --------------------------------------------------
+    // 4. Retry loop
+    // --------------------------------------------------
 
     while (true) {
       try {
-        await this.publish(eventData, { correlationId, attempt });
+        await this.publish(eventData, {
+          correlationId,
+          attempt,
+        });
+
+        // ------------------------------------------------
+        // 5. Publish succeeded
+        // ------------------------------------------------
+
         const latencyMs = Date.now() - startMs;
+
         this.circuitBreaker.onSuccess();
+
         this._incrementMetric("published");
 
-        this.logger.info(`[EventProducer] Event published successfully`, {
-          eventId: eventData.eventId,
-          correlationId: correlationId,
-          queueName: this.queueName,
-          latencyMs: latencyMs,
-          attempt: attempt + 1,
-        });
+        this.logger.info(
+          "[EventProducer] Event published successfully",
+          {
+            eventId: eventData.eventId,
+            correlationId,
+            queueName: this.queueName,
+            latencyMs,
+            attempt: attempt + 1,
+          }
+        );
+
         return true;
       } catch (err) {
-        this.logger.error(`[EventProducer] Failed to publish event`, {
-          eventId: eventData.eventId,
-          correlationId: correlationId,
-          queueName: this.queueName,
-          error: err.message,
-          stack: err.stack,
-          code: err.code,
-          attempt: attempt + 1,
-        });
+        // ------------------------------------------------
+        // 6. Publish failed
+        // ------------------------------------------------
 
-        const isRetryable =
-          isRetryable(err) && this.retryStrategy.shouldRetry(attempt);
-        if (!isRetryable) {
+        this.logger.error(
+          "[EventProducer] Failed to publish event",
+          {
+            eventId: eventData.eventId,
+            correlationId,
+            queueName: this.queueName,
+            error: err.message,
+            stack: err.stack,
+            code: err.code,
+            attempt: attempt + 1,
+          }
+        );
+
+        // ------------------------------------------------
+        // 7. Determine retry eligibility
+        // ------------------------------------------------
+
+        const retryable =
+          checkRetryable(err) &&
+          this.retryStrategy.shouldRetry(attempt);
+
+        // ------------------------------------------------
+        // 8. Do not retry
+        // ------------------------------------------------
+
+        if (!retryable) {
           this.circuitBreaker.onFailure();
+
           this._incrementMetric("failed");
 
           if (!this.retryStrategy.shouldRetry(attempt)) {
             this._incrementMetric("retriesExhausted");
           }
-          this.circuitBreaker.onFailure();
-          this._incrementMetric("failed");
-          throw err;
 
           this.logger.error(
-            `[EventProducer] Event publishing failed, not retrying`,
+            "[EventProducer] Event publishing failed, not retrying",
             {
               eventId: eventData.eventId,
-              correlationId: correlationId,
+              correlationId,
               queueName: this.queueName,
-              attempt: attempt,
+              attempt: attempt + 1,
               error: err.message,
               stack: err.stack,
               code: err.code,
-              attempt: attempt + 1,
-            },
+            }
           );
-<<<<<<< HEAD
-          //"The event was NOT published because the failure should not be retried."
-=======
 
->>>>>>> b75f4d1d391b68ede1f4ea0052ef00023bae67cb
-          return false;
+          throw err;
         }
 
+        // ------------------------------------------------
+        // 9. Wait before retry
+        // ------------------------------------------------
+
         await this.retryStrategy.wait(attempt);
+
+        // ------------------------------------------------
+        // 10. Increase attempt count
+        // ------------------------------------------------
+
         attempt++;
-        this.logger.warn(`[EventProducer] Retrying event publish`, {
-          eventId: eventData.eventId,
-          correlationId: correlationId,
-          queueName: this.queueName,
-          attempt: attempt,
-        });
+
+        this.logger.warn(
+          "[EventProducer] Retrying event publish",
+          {
+            eventId: eventData.eventId,
+            correlationId,
+            queueName: this.queueName,
+            attempt: attempt + 1,
+          }
+        );
       }
     }
   }
 }
+
