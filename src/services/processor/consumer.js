@@ -3,11 +3,10 @@ import rabbitmq from "../../shared/config/rabbitmq.js";
 import logger from "../../shared/config/logger.js";
 import postgres from "../../shared/config/postgres.js";
 import mongodb from "../../shared/config/mongodb.js";
-import {ProcessorContainer} from "./dependencies/dependencies.js";
 import {EVENT_TYPES} from "../../shared/events/eventContracts.js";
 import {RetryStrategy,isRetryable} from "../../shared/events/producer/RetryStrategy.js"
 import {CircuitBreaker} from "../../shared/events/producer/CircuitBreaker.js";
-import { error } from 'winston';
+import processorContainer from "./dependencies/dependencies.js";
 
 const messageSchema=z.object({
   type:z.enum([EVENT_TYPES.API_HIT]),
@@ -280,7 +279,7 @@ class EventConsumer{
     this._stats.retried++;
    }
 
-   async cleanUp()
+   async _cleanUp()
    {
     try{
     this.isRunning=false;
