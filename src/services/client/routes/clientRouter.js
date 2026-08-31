@@ -9,7 +9,7 @@ const {clientController}=Clientdependencies.controllers;
 router.get("/", (req, res) => {
   console.log("GET /api/client HIT");
   return res.status(200).json(
-    ResponceFormatter.sucess(
+    ResponceFormatter.success(
       {
         service: "Client Management",
         endpoints: [

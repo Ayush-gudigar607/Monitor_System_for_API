@@ -34,7 +34,7 @@ export class ClientController {
       return res
         .status(201)
         .json(
-          ResponseFormatter.sucess(client, "Client created successfully", 201),
+          ResponseFormatter.success(client, "Client created successfully", 201),
         );
     } catch (err) {
       next(err);
@@ -56,7 +56,7 @@ export class ClientController {
       return res
         .status(201)
         .json(
-          ResponseFormatter.sucess(
+          ResponseFormatter.success(
             user,
             "Client user created successfully",
             201,
@@ -81,7 +81,7 @@ export class ClientController {
       return res
         .status(201)
         .json(
-          ResponseFormatter.sucess(apiKey, "API key created successfully", 201),
+          ResponseFormatter.success(apiKey, "API key created successfully", 201),
         );
     } catch (err) {
       next(err);
@@ -102,7 +102,7 @@ export class ClientController {
   return res
     .status(200)
     .json(
-      ResponseFormatter.sucess(apiKeys, "API keys fetched successfully", 200),
+      ResponseFormatter.success(apiKeys, "API keys fetched successfully", 200),
     );
         }
         catch(err){

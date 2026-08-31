@@ -23,7 +23,7 @@ router.get("/", (req, res) => {
   console.log("GET /api/auth HIT");
 
   return res.status(200).json(
-    ResponceFormatter.sucess(
+    ResponceFormatter.success(
       {
         service: "Authentication",
         endpoints: [

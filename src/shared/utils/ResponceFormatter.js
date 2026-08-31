@@ -1,6 +1,6 @@
 class ResponceFormatter {
   //Response formatter for success response
-  static sucess(data, message = "success", statusCode = 200) {
+  static success(data, message = "success", statusCode = 200) {
     return {
       success: true,
       message,
@@ -35,7 +35,7 @@ class ResponceFormatter {
   //Response formatter for paginated response
   static paginated(data = null, page, limit, total) {
     return {
-      sucess: true,
+      success: true,
       data,
       pagination: {
         page,

@@ -39,7 +39,7 @@ export class AuthController {
       res
         .status(201)
         .json(
-          ResponceFormatter.sucess(
+          ResponceFormatter.success(
             user,
             "super admin created successfully",
             201,
@@ -71,7 +71,7 @@ export class AuthController {
       res
         .status(201)
         .json(
-          ResponceFormatter.sucess(user, "User registered successfully", 201),
+          ResponceFormatter.success(user, "User registered successfully", 201),
         );
     } catch (err) {
       next(err);
@@ -94,7 +94,7 @@ export class AuthController {
       res
         .status(200)
         .json(
-          ResponceFormatter.sucess({user,token}, "User logged in successfully", 200),
+          ResponceFormatter.success({user,token}, "User logged in successfully", 200),
         );
     } catch (err) {
       next(err);
@@ -111,7 +111,7 @@ export class AuthController {
       res
         .status(200)
         .json(
-          ResponceFormatter.sucess(
+          ResponceFormatter.success(
             user,
             "User profile fetched successfully",
             200,
@@ -129,7 +129,7 @@ export class AuthController {
       res
         .status(200)
         .json(
-          ResponceFormatter.sucess(null, "User logged out successfully", 200),
+          ResponceFormatter.success(null, "User logged out successfully", 200),
         );
     } catch (err) {
       next(err);

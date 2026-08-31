@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json(
-    ResponceFormatter.sucess(
+    ResponceFormatter.success(
       {
         status: "healthy",
         timeStamp: new Date().toISOString(),
@@ -54,7 +54,7 @@ app.get("/health", (req, res) => {
 // Root endpoint
 app.get("/", (req, res) => {
   res.status(200).json(
-    ResponceFormatter.sucess({
+    ResponceFormatter.success({
       service: "Api Monitoring Service",
       version: "1.0.0",
       endpoints: [
