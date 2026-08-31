@@ -146,7 +146,7 @@ class EventConsumer{
   
    async _handleMessage(msg)
    {
-    if(!this._circuitBreaker.allowRequest())
+    if(!this._circuitBreaker.allowedRequest())
     {
       this._logger.warn('Circuit Breaker open,requering message');
       //Only reject this message, not all previously delivered messages

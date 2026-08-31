@@ -1,6 +1,6 @@
 import config from "../../config/index.js";
 import logger from "../../config/logger.js";
-import rabbitmq from "../../config/rabbitmq.js";
+import rabbitmqConnection from "../../config/rabbitmq.js";
 
 import {CircuitBreaker} from "./CircuitBreaker.js";
 import { ConformChannelManager } from "./ConformChannelManager.js";
@@ -10,7 +10,7 @@ import {RetryStrategy} from "./RetryStrategy.js";
 export function createEventProducer({overrides={}})
 {
     const log=overrides.logger || logger;
-    const rabbitmq=overrides.rabbitmq || rabbitmq;
+    const rabbitmq=overrides.rabbitmq || rabbitmqConnection;
     const queueName=overrides.queueName || config.rabbitmq.queue;
 
     if(!rabbitmq)
@@ -31,9 +31,9 @@ export function createEventProducer({overrides={}})
     const channelManager=overrides.channelManager || new ConformChannelManager({rabbitmq,logger:log});
 
     const circuitBreaker=overrides.circuitBreaker || new CircuitBreaker({
-        failureThreshold: config.rabbitmq.circuitBreaker.failureThreshold,
-        cooldownMs:config.events.circuitBreaker.cooldownMs || 30000,
-        halfOpenMaxAttempts:config.events.circuitBreaker.halfOpenMaxAttempts || 2,
+        failureThreshold: config.rabbitmq.circuitBreaker?.failureThreshold || 5,
+        cooldownMs:config.events?.circuitBreaker?.cooldownMs || 30000,
+        halfOpenMaxAttempts:config.events?.circuitBreaker?.halfOpenMaxAttempts || 2,
         logger:log
     });
 

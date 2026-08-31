@@ -70,7 +70,7 @@ export class CircuitBreaker {
     return this._state;
   }
 
-  allowRequest() {
+  allowedRequest() {
     const currentState = this.getState();
 
     if (currentState === CircuitState.CLOSED) {

@@ -21,9 +21,12 @@ export function isRetryable(err)
     const code=(err.code || "").toString().toLowerCase();
 
    //Some specific error patterns that are commonly associated with transient issues in RabbitMQ or network problem
-    if(code==="ENOTFOUND") return true;
+    if(code === "enotfound") return true;
 
-    return RETRYABLE_PATTERNS.some(pattern=>message.includes(pattern) || code.includes(pattern).toUpperCase());
+    return RETRYABLE_PATTERNS.some((pattern) => {
+        const normalizedPattern = pattern.toLowerCase();
+        return message.includes(normalizedPattern) || code.includes(normalizedPattern);
+    });
 }
 
 export class RetryStrategy {

@@ -74,6 +74,8 @@ export class ConformChannelManager extends EventEmitter {
         code: err.code,
       });
       throw err;
+    } finally {
+      this._connecting = false;
     }
   }
 }
