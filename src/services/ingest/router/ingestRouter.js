@@ -16,7 +16,7 @@ const ingestLimitter=rateLimit({
     },
       standardHeaders:true,
   legacyHeaders:false
-})
+});
 
 router.post("/",validateApiKey,ingestLimitter,(req,res)=>{
      ingestController.ingestHit(req,res,next);
