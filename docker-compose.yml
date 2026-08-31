@@ -158,6 +158,35 @@ services:
       timeout: 10s
       retries: 5
 
+  api-monitor-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: api-monitor-consumer
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=admin
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - api-monitoring-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
     driver: local
