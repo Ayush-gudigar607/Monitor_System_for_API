@@ -38,5 +38,48 @@ class EventConsumer{
     };
     this._processedIds=new Set();
     this._poisonMessages=new Set()
+  };
+
+   async _connectDatabase()
+   {
+    const maxRetries=5;
+    let retries=0;
+
+    while(retries<maxRetries)
+    {
+      try {
+        this._logger.info('Connecting to Databases');
+        await Promise.all([
+          this._mongodb.connect(),
+          this._rabbitmq.connect()
+        ])
+
+        this._logger.info("Database Connections established");
+        return;
+      } catch (error) {
+        retries++;
+        this._logger.error(`Database Connection attempt ${retries} failed`,error);
+        if(retries>=maxRetries)
+        {
+          throw new Error(`Failed to connect database after ${maxretries} attempts`);
+        }
+        //5000 * retries: This calculates the delay in milliseconds. If retries is 1, it waits 5 seconds. If retries is 2, it waits 10 seconds, and so on.
+        await new Promise(resolve =>setTimeout(resolve,5000*retries))
+      }
+    }
+   }
+
+  async start()
+  {
+    try{
+      await this._connectDatabase();
+      
+    }
+    catch(err)
+    {
+
+    }
   }
+
 }
+
