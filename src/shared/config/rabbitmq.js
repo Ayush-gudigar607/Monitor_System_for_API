@@ -6,33 +6,19 @@ class RabbitMqConnection {
   constructor() {
     this.connection = null;
     this.channel = null;
-    this.isConnecting = false;
+    this.connecting = null;
   }
   //This method will connect to rabbitmq and return the channel
   async connect() {
     if (this.channel) {
       return this.channel;
     }
-    //if connection is in progress then wait for 100 ms and try again
-    if (this.isConnecting) {
-      //a b c =====>
-      //a b ======> c
-      //a ======> b =====> c
-      //if connection is in progress then wait for 100 ms and try again
-      await new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-          if (!this.isConnecting) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-      });
+    if (this.connecting) {
+      return this.connecting;
+    }
 
-      //if channel is available then return it
-      return this.channel;
-
+    this.connecting = (async () => {
       try {
-        this.isConnecting = true;
         logger.info("Connecting to RabbitMQ...", config.rabbitmq.url);
         this.connection = await amqp.connect(config.rabbitmq.url);
         this.channel = await this.connection.createChannel();
@@ -73,12 +59,16 @@ class RabbitMqConnection {
         //return the channel
         return this.channel;
       } catch (error) {
+        this.connection = null;
+        this.channel = null;
         logger.error("Error connecting to RabbitMQ:", error);
         throw error;
       } finally {
-        this.isConnecting = false;
+        this.connecting = null;
       }
-    }
+    })();
+
+    return this.connecting;
   }
 
   //This method will return the channel
@@ -104,7 +94,7 @@ class RabbitMqConnection {
       //close the connection
       if (this.connection) {
         await this.connection.close();
-        this.connection = false;
+        this.connection = null;
       }
       //log the connection status
       logger.info("Rabbitmq connection closed successfully");
