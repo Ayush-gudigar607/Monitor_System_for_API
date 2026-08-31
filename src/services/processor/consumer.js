@@ -1,6 +1,7 @@
-import {union, unknown, z} from 'zod';
+import {z} from 'zod';
 import rabbitmq from "../../shared/config/rabbitmq.js";
 import logger from "../../shared/config/logger.js";
+import config from "../../shared/config/index.js";
 import postgres from "../../shared/config/postgres.js";
 import mongodb from "../../shared/config/mongodb.js";
 import {EVENT_TYPES} from "../../shared/events/eventContracts.js";
@@ -51,6 +52,7 @@ class EventConsumer{
         this._logger.info('Connecting to Databases');
         await Promise.all([
           this._mongodb.connect(),
+          this._postgres.connect(),
           this._rabbitmq.connect()
         ])
 
@@ -142,9 +144,9 @@ class EventConsumer{
    }
 
   
-   async _handleMesage(msg)
+   async _handleMessage(msg)
    {
-    if(!this._circuitBreaker.allowRequest)
+    if(!this._circuitBreaker.allowRequest())
     {
       this._logger.warn('Circuit Breaker open,requering message');
       //Only reject this message, not all previously delivered messages
@@ -157,7 +159,7 @@ class EventConsumer{
     let messageData=null;
 
     try {
-      messageData=this._parseMessage(msg);
+      messageData=await this._parseMessage(msg);
 
       //idempotency
       if(this._processedIds.has(messageData.messageId))
@@ -168,24 +170,20 @@ class EventConsumer{
 
         this.channel.ack(msg);
         return;
-        
-        await this._processMessage(messageData);
-
-        this.channel.ack(msg);
-        this._circuitBreaker.onSuccess();
-        this._stats.processed++;
-        this._stats.lastProcessedAt=new Date();
-
-       this._processedIds.add(messageData.messageId);
-
-       if(this._processedIds.size>100_000)
-       {
-        //next will help to get the first item
-        const first=this._processedIds.values().next().value
-        this._processedIds.delete(first)     }
       }
 
-      this._processMessage.delete(messageData.type);
+      await this._processMessage(messageData);
+      this.channel.ack(msg);
+      this._circuitBreaker.onSuccess();
+      this._stats.processed++;
+      this._stats.lastProcessedAt=new Date();
+      this._processedIds.add(messageData.messageId);
+
+      if(this._processedIds.size>100_000)
+      {
+        const first=this._processedIds.values().next().value;
+        this._processedIds.delete(first);
+      }
     }
     catch (error) {
       await this._handleProcessingError(error,msg,messageData,startTime);
@@ -333,7 +331,7 @@ class EventConsumer{
     }
     catch(err)
     {
-     this._logger.error('Failed to start consumer:',error);
+     this._logger.error('Failed to start consumer:',err);
      await this._cleanUp();
      throw err;
     }  }
@@ -341,10 +339,11 @@ class EventConsumer{
     async stop()
     {
       try {
-        await this.cleanUp();
+        await this._cleanUp();
 
         await Promise.all([
           this._mongodb.disconnect(),
+          this._postgres.close(),
           this._rabbitmq.close()
         ]);
       } catch (error) {
@@ -356,8 +355,8 @@ class EventConsumer{
 
 const retryStrategy = new RetryStrategy({
     maxRetries: config.rabbitmq.retryAttempts,
-    baseDelayMs: config.rabbitmq.retryDelay,
-    maxDelayMs: 30_000,
+    baseDelay: config.rabbitmq.retryDelay,
+    maxDelay: 30_000,
     jitterFactor: 0.3,
 });
 
