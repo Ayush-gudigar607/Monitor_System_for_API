@@ -70,3 +70,5 @@ const validateApiKey = async (req, res, next) => {
       .json(ResponseFormatter.error("Internal server error", 500));
   }
 };
+
+export default validateApiKey;
