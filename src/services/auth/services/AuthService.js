@@ -76,9 +76,10 @@ export class AuthService {
       }
 
       const user = await this.userRepository.create(userData);
+      const token = SecurityUtils.generateToken(user);
 
       logger.info(`User registered successfully with email: ${user.email}`);
-      return { user: this.formateResponce(user)};
+      return { user: this.formateResponce(user), token };
     } catch (err) {
       logger.error(`Error registering user: ${err.message}`);
       throw err;

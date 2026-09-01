@@ -106,7 +106,9 @@ export class AuthController {
   async getProfile(req, res, next) {
     try {
       const userId = req.user._id;
+      if(!userId) throw new Error("User ID is missing in the request");
       const user = await this.authService.getProfile(userId);
+      if(!user) throw new Error("User not found");
 
       res
         .status(200)
