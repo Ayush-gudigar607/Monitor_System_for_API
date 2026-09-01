@@ -1,5 +1,5 @@
 import clientRepository from "../../client/repository/ClientRepository.js";
-import processContainer from "../../../shared/config/processContainer.js";
+import processContainer from "../../../services/processor/dependencies/dependencies.js";
 import authContainer from "../../auth/dependencies/Dependencies.js";
 
 import {AnalyticsService} from "../services/analyticsService.js";
