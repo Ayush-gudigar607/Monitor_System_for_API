@@ -89,26 +89,29 @@ export class AuthController {
         secure: config.cookie.secure,
         maxAge: config.cookie.expires,
       });
-  //token will be deleted after production
+      //token will be deleted after production
 
       res
         .status(200)
         .json(
-          ResponceFormatter.success({user,token}, "User logged in successfully", 200),
+          ResponceFormatter.success(
+            { user, token },
+            "User logged in successfully",
+            200,
+          ),
         );
     } catch (err) {
       next(err);
     }
   }
-  
 
-//This method will get the profile of a user and return the user object
+  //This method will get the profile of a user and return the user object
   async getProfile(req, res, next) {
     try {
       const userId = req.user._id;
-      if(!userId) throw new Error("User ID is missing in the request");
+      if (!userId) throw new Error("User ID is missing in the request");
       const user = await this.authService.getProfile(userId);
-      if(!user) throw new Error("User not found");
+      if (!user) throw new Error("User not found");
 
       res
         .status(200)
@@ -123,7 +126,7 @@ export class AuthController {
       next(err);
     }
   }
-  
+
   //This method will logout a user and clear the authentication token
   async logout(req, res, next) {
     try {

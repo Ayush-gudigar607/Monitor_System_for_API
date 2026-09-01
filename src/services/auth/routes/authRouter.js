@@ -49,8 +49,8 @@ router.get("/", (req, res) => {
           },
         ],
       },
-      "Auth endpoints available"
-    )
+      "Auth endpoints available",
+    ),
   );
 });
 
@@ -59,7 +59,7 @@ router.post(
   "/onboard-super-admin",
   requestLogger,
   validate(onboardsuperAdminSchema),
-  authController.OnboardSuperAdmin.bind(authController)
+  authController.OnboardSuperAdmin.bind(authController),
 );
 
 // POST /api/auth/register
@@ -67,7 +67,7 @@ router.post(
   "/register",
   requestLogger,
   validate(registerSchema),
-  authController.register.bind(authController)
+  authController.register.bind(authController),
 );
 
 // POST /api/auth/login
@@ -75,7 +75,7 @@ router.post(
   "/login",
   requestLogger,
   validate(loginSchema),
-  authController.login.bind(authController)
+  authController.login.bind(authController),
 );
 
 // GET /api/auth/profile
@@ -83,7 +83,7 @@ router.get(
   "/profile",
   requestLogger,
   authenticate,
-  authController.getProfile.bind(authController)
+  authController.getProfile.bind(authController),
 );
 
 // POST /api/auth/logout
@@ -91,7 +91,7 @@ router.post(
   "/logout",
   requestLogger,
   authenticate,
-  authController.logout.bind(authController)
+  authController.logout.bind(authController),
 );
 
 export default router;
