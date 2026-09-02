@@ -30,17 +30,16 @@ export class AuthService {
   //This method will onboard a super admin user and return the user object and token
   async OnboardSuperAdmin(SuperAdminData) {
     try {
-      const existingUser = await this.userRepository.findAll();
+      // const existingUser = await this.userRepository.findAll();
 
-      //const existingSuperAdmin =
-      //   await userRepository.findSuperAdmin();
+      const existingSuperAdmin=await this.userRepository.findSuperAdmin();
 
-      // if (existingSuperAdmin) {
-      //   throw new Error("Super admin already exists");
-      // }
+      if (existingSuperAdmin) {
+        throw new Error("Super admin already exists");
+      }
 
       //This will check if the existing user array has any user with the role of SUPER_ADMIN, if it does then it will throw an error
-      if (existingUser.length > 0 && existingUser) {
+      if (existingSuperAdmin.length > 0 && existingSuperAdmin) {
         throw new AppError("Super Admin already exists", 409);
       }
 
