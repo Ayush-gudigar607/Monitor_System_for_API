@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import config from "../config/index.js";
 
 
 const apiKeySchema=new mongoose.Schema(
@@ -99,7 +100,7 @@ const apiKeySchema=new mongoose.Schema(
         type:Date,
         default:()=>
         {
-            const days = parseInt(process.env.API_KEY_EXPIRATION_DAYS, 10) || 90;
+            const days = parseInt(config.API_KEY_EXPIRATION_DAYS, 10) || 90;
             return new Date(Date.now() + days * 24 * 60 * 60 * 1000);  // Set expiration date to 90 days from now by default(for example 90 days from now the key will expire)
         }
         },
