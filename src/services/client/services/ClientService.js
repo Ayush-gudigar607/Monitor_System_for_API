@@ -110,6 +110,10 @@ formatApiKeyForResponse(apiKey) {
 
       const slug = this.generateSlug(name);
 
+      if(!slug || slug.length === 0) {
+        throw new AppError("Failed to generate slug from client name", 400);
+      }
+
       const existingClient = await this.clientRepository.findBySlug(slug);
 
       if (existingClient) {
