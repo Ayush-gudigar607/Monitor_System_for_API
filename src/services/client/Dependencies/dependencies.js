@@ -17,7 +17,7 @@ class container
         };
 
             const services={
-        clientService:new ClientService({
+            clientService:new ClientService({
             clientRepository:repositories.clientRepository,
             apiKeyRepository:repositories.apiKeyRepository,
             userRepository:repositories.userRepository
