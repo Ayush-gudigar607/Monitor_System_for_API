@@ -22,4 +22,9 @@ export default class BaseRepository {
   async findAll() {
     throw new Error("Method not implemented");
   }
+
+  async findSuperAdmin()
+  {
+    throw new Error("Method not implemented");
+  }
 }
