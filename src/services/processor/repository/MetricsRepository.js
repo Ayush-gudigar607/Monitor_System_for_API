@@ -9,9 +9,9 @@ export class MetricsRepository extends BaseRepository {
     super({ logger: l });
     if (!pg) {
       throw new Error("Postgres client is required");
-    }
+    };
     this.postgres = pg;
-  }
+  };
 
   _query(sql, params = [], client = this.postgres) {
     const target = client || this.postgres;
@@ -20,7 +20,7 @@ export class MetricsRepository extends BaseRepository {
       const err = new Error("Postgres client does not configured properly");
       this.logger.error(err.message);
       throw err;
-    }
+    };
 
     //This will return a promise that resolves with the query result or rejects with an error and defualt_limit is defaulted to 30 seconds, you can adjust it as per your needs.
     return target.query({
@@ -28,7 +28,7 @@ export class MetricsRepository extends BaseRepository {
       values: params,
       statement_timeout: DEFAULT_LIMIT,
     });
-  }
+  };
   //UPSERT is being used to continuously accumulate API traffic metrics without creating duplicate rows for the same endpoint/time bucket.
   async upsertMetrics(metricsData) {
     try {
@@ -69,8 +69,8 @@ export class MetricsRepository extends BaseRepository {
     } catch (err) {
       this.logger.error(`Error upserting metrics: ${err.message}`);
       throw err;
-    }
-  }
+    };
+  };
 
   async getMetrics(filter = {}) {
     try {
@@ -109,35 +109,35 @@ export class MetricsRepository extends BaseRepository {
         whereConditions.push(`client_id=$${paramIndex}`);
         params.push(clientId);
         paramIndex++;
-      }
+      };
 
       if (serviceName) {
         whereConditions.push(`service_name=$${paramIndex}`);
         params.push(serviceName);
         paramIndex++;
-      }
+      };
 
       if (endpoint) {
         whereConditions.push(`endpoint=$${paramIndex}`);
         params.push(endpoint);
         paramIndex++;
-      }
+      };
 
       if (startTime) {
         whereConditions.push(`time_bucket >= $${paramIndex}`);
         params.push(startTime);
         paramIndex++;
-      }
+      };
 
       if (endTime) {
         whereConditions.push(`time_bucket <= $${paramIndex}`);
         params.push(endTime);
         paramIndex++;
-      }
+      };
 
       if (whereConditions.length > 0) {
         query += ` WHERE ${whereConditions.join(" AND ")}`;
-      }
+      };
 
       query += `GROUP BY service_name, endpoint, method, time_bucket
       ORDER BY time_bucket DESC 
@@ -150,8 +150,8 @@ export class MetricsRepository extends BaseRepository {
     } catch (err) {
       this.logger.error(`Error getting metrics: ${err.message}`);
       throw err;
-    }
-  }
+    };
+  };
 
   async getEndpoints(clientId, limit = 10, startTime = null) {
     try {
@@ -173,12 +173,13 @@ export class MetricsRepository extends BaseRepository {
         whereConditions.push(`client_id=$${paramIndex}`);
         params.push(clientId);
         paramIndex++;
-      }
+      };
+
       if (startTime) {
         whereConditions.push(`time_bucket >= $${paramIndex}`);
         params.push(startTime);
         paramIndex++;
-      }
+      };
 
       query = `GROUP BY service_name, endpoint, method
         ORDER BY total_hits DESC
@@ -191,8 +192,8 @@ export class MetricsRepository extends BaseRepository {
     } catch (err) {
       this.logger.error(`Error getting endpoints: ${err.message}`);
       throw err;
-    }
-  }
+    };
+  };
 
   async getOverallstats(clientId, startTime = null, endTime = null) {
     try {
@@ -211,13 +212,13 @@ export class MetricsRepository extends BaseRepository {
         query += ` WHERE client_id=$${paramIndex}`;
         params.push(clientId);
         paramIndex++;
-      }
+      };
 
       if (startTime) {
         query += ` AND time_bucket >= $${paramIndex}`;
         params.push(startTime);
         paramIndex++;
-      }
+      };
 
       //here time_bucket is a timestamp column in the endpoint_metrics table that represents the time interval for which the metrics are aggregated. The <= operator is used to filter the records based on the endTime parameter, ensuring that only metrics within the specified time range are considered in the overall statistics calculation.
       if (endTime) {
@@ -225,13 +226,13 @@ export class MetricsRepository extends BaseRepository {
         query += ` AND time_bucket <= $${paramIndex}`;
         params.push(endTime);
         paramIndex++;
-      }
+      };
 
       const result = await this._query(query, params);
       return result.rows[0] || {};
     } catch (err) {
       this.logger.error(`Error getting overall stats: ${err.message}`);
       throw err;
-    }
-  }
-}
+    };
+  };
+};
