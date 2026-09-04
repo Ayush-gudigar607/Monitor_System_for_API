@@ -91,7 +91,7 @@ export class MetricsRepository extends BaseRepository {
       //safeoffset is used to ensure that the offset is not negative, which could lead to unexpected behavior in the query.
       const safeOffset = Math.max(offset, 0);
 
-      const query = `SELECT 
+      let query = `SELECT 
     service_name, endpoint, method,
     SUM(total_hits) AS total_hits,
     SUM(error_hits) AS error_hits,
