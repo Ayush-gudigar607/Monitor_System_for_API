@@ -6,7 +6,7 @@ export class ApiHitRepository extends BaseRepository {
     if (!model) {
       throw new Error("Model is required");
     };
-    this.model = model;
+    this.model = model
   };
 
   async save(userData) {

@@ -102,10 +102,15 @@ export class ProcessorService {
 
   async cleanUpOldMetrics(daysToKeep = 30) {
     try {
+      //first get the date
       let cutOffDate = new Date();
+
+      //daysTokeep is by deafult 30 days
       cutOffDate.setDate(cutOffDate.getDate() - daysToKeep);
 
-      const deletedCount = await this.apiHitRepository.deleteOldHits(cutOffDate);
+      //this will delete the old records
+      const deletedCount =
+        await this.apiHitRepository.deleteOldHits(cutOffDate);
       logger.info(
         `Cleaned up ${deletedCount} old API hits older than ${cutOffDate}`,
       );
