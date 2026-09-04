@@ -17,7 +17,7 @@ export class MetricsRepository extends BaseRepository {
     const target = client || this.postgres;
 
     if (!target || typeof target.query !== "function") {
-      const err = new Error("Postgres client does not configured properly");
+      const err = new Error("Postgres client is not configured properly");
       this.logger.error(err.message);
       throw err;
     };
