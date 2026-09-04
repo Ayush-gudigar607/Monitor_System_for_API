@@ -24,12 +24,6 @@ export class ApiHitRepository extends BaseRepository {
       );
       return doc;
     } catch (err) {
-      if (err && err.code === 11000) {
-        this.logger.warn("Duplicate event ID,skipping save", {
-          eventId: userData.eventId,
-        });
-        return null;
-      }
       this.logger.error(`Error saving API Hit: ${err.message}`);
       throw err;
     }
