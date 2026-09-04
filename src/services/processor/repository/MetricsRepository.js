@@ -213,7 +213,7 @@ export class MetricsRepository extends BaseRepository {
       let paramIndex = 1;
 
       if (clientId != null) {
-        query += ` WHERE client_id=$${paramIndex}`;
+        query += ` AND client_id=$${paramIndex}`;
         params.push(clientId);
         paramIndex++;
       };
