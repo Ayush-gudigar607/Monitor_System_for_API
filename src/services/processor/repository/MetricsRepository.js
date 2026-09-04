@@ -162,7 +162,7 @@ export class MetricsRepository extends BaseRepository {
        SUM(total_hits) AS total_hits,
        SUM(avg_latency * total_hits) / NULLIF(SUM(total_hits), 0) as avg_latency,
        SUM(error_hits) AS error_hits 
-       FROM endpoint_metrics,`;
+       FROM endpoint_metrics`;
 
       const params = [];
       let paramIndex = 1;
