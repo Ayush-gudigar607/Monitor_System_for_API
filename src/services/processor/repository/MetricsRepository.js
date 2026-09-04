@@ -156,7 +156,7 @@ export class MetricsRepository extends BaseRepository {
   async getEndpoints(clientId, limit = 10, startTime = null) {
     try {
       const safeLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
-      const query = `
+      let query = `
        SELECT 
        service_name, endpoint, method,
        SUM(total_hits) AS total_hits,
