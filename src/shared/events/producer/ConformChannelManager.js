@@ -8,7 +8,7 @@ export class ConformChannelManager extends EventEmitter {
     this.channel = null;
     this._connecting = false;
     this._connectWaiters = [];
-  }
+  };
 
   async getChannel() {
     if (this.channel) return this.channel;
@@ -16,10 +16,10 @@ export class ConformChannelManager extends EventEmitter {
       return new Promise((resolve, reject) => {
         this._connectWaiters.push({ resolve, reject });
       });
-    }
+    };
 
     return this._connect();
-  }
+  };
 
   async _connect() {
     this._connecting = true;
@@ -64,6 +64,8 @@ export class ConformChannelManager extends EventEmitter {
       //for the waiters
       for (const waiter of this._connectWaiters) waiter.resolve(conformChannel);
       this._connectWaiters = [];
+      
+      // Return the channel for the current call
       return conformChannel;
     } catch (err) {
       for (const waiter of this._connectWaiters) waiter.reject(err);
@@ -76,6 +78,6 @@ export class ConformChannelManager extends EventEmitter {
       throw err;
     } finally {
       this._connecting = false;
-    }
-  }
-}
+    };
+  };
+};

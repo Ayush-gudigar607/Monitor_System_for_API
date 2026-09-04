@@ -15,7 +15,7 @@ export function isRetryable(err)
     if(!err || !err.message)
     {
         return false;
-    }
+    };
 
     const message=(err.message || "").toLowerCase();
     const code=(err.code || "").toString().toLowerCase();
@@ -27,7 +27,7 @@ export function isRetryable(err)
         const normalizedPattern = pattern.toLowerCase();
         return message.includes(normalizedPattern) || code.includes(normalizedPattern);
     });
-}
+};
 
 export class RetryStrategy {
    constructor(opts={})
@@ -42,7 +42,7 @@ export class RetryStrategy {
    shouldRetry(attempt)
    {
     return attempt < this.maxRetries;
-   }
+   };
 
    delay(attempt)
    {
@@ -51,12 +51,12 @@ export class RetryStrategy {
     const jitterRange=capped * this.jitterFactor;
     const jitter=(Math.random()-0.5) * 2 * jitterRange; // Random value between -jitterRange and +jitterRange
     return Math.max(0,Math.round(capped+jitter));
-   }
+   };
 
    wait(attempt)
    {
     const ms=this.delay(attempt);
     // Return a promise that resolves after the calculated delay
     return new Promise(resolve=>setTimeout(resolve,ms));
-   }
-}
+   };
+};

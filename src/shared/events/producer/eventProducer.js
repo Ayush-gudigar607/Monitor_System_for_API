@@ -11,23 +11,23 @@ export class EventProducer {
   }) {
     if (!channelManager) {
       throw new Error("channelManager is required");
-    }
+    };
 
     if (!circuitBreaker) {
       throw new Error("circuitBreaker is required");
-    }
+    };
 
     if (!retryStrategy) {
       throw new Error("retryStrategy is required");
-    }
+    };
 
     if (!logger) {
       throw new Error("logger is required");
-    }
+    };
 
     if (!queueName) {
       throw new Error("queueName is required");
-    }
+    };
 
     this.channelManager = channelManager;
     this.circuitBreaker = circuitBreaker;
@@ -46,6 +46,16 @@ export class EventProducer {
 
   // Track system health
   _incrementMetric(metric) {
+    if(this._shutdown) {
+      this.logger.warn(`Attempted to increment metric ${metric} after shutdown`);
+      return;
+    };
+    
+    if (!Object.prototype.hasOwnProperty.call(this.metrics, metric)) {
+      this.logger.warn(`Attempted to increment unknown metric ${metric}`);
+      return;
+    };
+    
     this.metrics[metric] = (this.metrics[metric] || 0) + 1;
   }
 
@@ -55,9 +65,8 @@ export class EventProducer {
   async publish(eventData, { correlationId, attempt = 0 }) {
     const channel = await this.channelManager.getChannel();
 
-    if (!channel) {
-      this.logger.error("No channel available for publishing");
-      throw new Error("No channel available for publishing");
+    if(!channel) {
+      throw new Error("Failed to get a valid channel for publishing");
     }
 
     const message = {
@@ -104,7 +113,7 @@ export class EventProducer {
             return reject(
               new Error(`Failed to publish message: ${err.message}`)
             );
-          }
+          };
 
           channel.removeListener("drain", onDrain);
           resolve();
@@ -121,6 +130,7 @@ export class EventProducer {
           }
         );
 
+       //This will ensure that we listen for the drain event only when the buffer is full, preventing unnecessary event listeners and potential memory leaks.
         channel.on("drain", onDrain);
       }
     });
@@ -313,6 +323,7 @@ export class EventProducer {
         // 10. Increase attempt count
         // ------------------------------------------------
 
+        //another attempt will be made, so increment the attempt counter
         attempt++;
 
         this.logger.warn(
@@ -325,7 +336,7 @@ export class EventProducer {
           }
         );
       }
-    }
-  }
-}
+    };
+  };
+};
 
