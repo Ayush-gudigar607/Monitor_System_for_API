@@ -181,7 +181,11 @@ export class MetricsRepository extends BaseRepository {
         paramIndex++;
       };
 
-      query = `GROUP BY service_name, endpoint, method
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(" AND ")}`;
+      }
+
+      query += ` GROUP BY service_name, endpoint, method
         ORDER BY total_hits DESC
         LIMIT $${paramIndex}`;
 
