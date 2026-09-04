@@ -11,23 +11,23 @@ export class EventProducer {
   }) {
     if (!channelManager) {
       throw new Error("channelManager is required");
-    }
+    };
 
     if (!circuitBreaker) {
       throw new Error("circuitBreaker is required");
-    }
+    };
 
     if (!retryStrategy) {
       throw new Error("retryStrategy is required");
-    }
+    };
 
     if (!logger) {
       throw new Error("logger is required");
-    }
+    };
 
     if (!queueName) {
       throw new Error("queueName is required");
-    }
+    };
 
     this.channelManager = channelManager;
     this.circuitBreaker = circuitBreaker;
