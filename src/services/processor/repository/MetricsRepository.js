@@ -9,23 +9,26 @@ export class MetricsRepository extends BaseRepository {
     super({ logger: l });
     if (!pg) {
       throw new Error("Postgres client is required");
-    }
+    };
     this.postgres = pg;
-  }
+  };
 
-  _query(sql,params=[],client=this.postgres)
-  {
-    const target=client || this.postgres;
+  _query(sql, params = [], client = this.postgres) {
+    const target = client || this.postgres;
 
-    if(!target || typeof target.query!=="function")
-    {
-        const err=new Error("Postgres client does not configured properly");
-        this.logger.error(err.message);
-        throw err;
-    }
+    if (!target || typeof target.query !== "function") {
+      const err = new Error("Postgres client is not configured properly");
+      this.logger.error(err.message);
+      throw err;
+    };
 
-    return target.query({text:sql,values:params,statement_timeout:QUERY_TIMEOUT_MS});
-  }
+    // Returns a promise that resolves with the query result or rejects with an error; DEFAULT_LIMIT defaults to 30 seconds (adjust as needed).
+    return target.query({
+      text: sql,
+      values: params,
+      statement_timeout: DEFAULT_LIMIT,
+    });
+  };
   //UPSERT is being used to continuously accumulate API traffic metrics without creating duplicate rows for the same endpoint/time bucket.
   async upsertMetrics(metricsData) {
     try {
@@ -51,7 +54,7 @@ export class MetricsRepository extends BaseRepository {
        min_latency = LEAST(endpoint_metrics.min_latency, EXCLUDED.min_latency), 
        max_latency = GREATEST(endpoint_metrics.max_latency, EXCLUDED.max_latency)`;
 
-       await this._query(query,[
+      await this._query(query, [
         clientId,
         serviceName,
         endpoint,
@@ -61,147 +64,144 @@ export class MetricsRepository extends BaseRepository {
         avgLatency,
         minLatency,
         maxLatency,
-        timeBucket
-       ]);
-
+        timeBucket,
+      ]);
     } catch (err) {
-        this.logger.error(`Error upserting metrics: ${err.message}`);
-        throw err;
-    }
-  }
+      this.logger.error(`Error upserting metrics: ${err.message}`);
+      throw err;
+    };
+  };
 
-  async getMetrics(filter={})
-  {
-    try{
-    const {clientId,serviceName,endpoint,method,startTime,endTime,limit=100,offset=0}=filter;
-const safeLimit = Math.min(
-    Math.max(1, limit),
-    MAX_LIMIT
-);
-    const safeOffset=Math.max(offset,0);
+  async getMetrics(filter = {}) {
+    try {
+      const {
+        clientId,
+        serviceName,
+        endpoint,
+        method,
+        startTime,
+        endTime,
+        limit = 100,
+        offset = 0,
+      } = filter;
 
-    const query=`SELECT 
+      //safeLimit is used to ensure that the limit is within a reasonable range, preventing potential performance issues or excessive data retrieval.
+      const safeLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
+
+      //safeoffset is used to ensure that the offset is not negative, which could lead to unexpected behavior in the query.
+      const safeOffset = Math.max(offset, 0);
+
+      let query = `SELECT 
     service_name, endpoint, method,
     SUM(total_hits) AS total_hits,
     SUM(error_hits) AS error_hits,
     AVG(avg_latency) AS avg_latency,
     MIN(min_latency) AS min_latency,
     MAX(max_latency) AS max_latency,
-    time_bucket FROM endpoint_metrics`
-        
+    time_bucket FROM endpoint_metrics`;
 
-    const params=[];
-    let paramIndex=1;
+      const params = [];
+      let paramIndex = 1;
 
-    let whereConditions=[];
+      let whereConditions = [];
 
-    if(clientId!=null)
-    {
+      if (clientId != null) {
         whereConditions.push(`client_id=$${paramIndex}`);
         params.push(clientId);
         paramIndex++;
-    }
+      };
 
-    if(serviceName)
-    {
+      if (serviceName) {
         whereConditions.push(`service_name=$${paramIndex}`);
         params.push(serviceName);
         paramIndex++;
-    }
+      };
 
-    if(endpoint)
-    {
+      if (endpoint) {
         whereConditions.push(`endpoint=$${paramIndex}`);
         params.push(endpoint);
         paramIndex++;
-    }
+      };
 
-    if(startTime)
-    {
+      if (startTime) {
         whereConditions.push(`time_bucket >= $${paramIndex}`);
         params.push(startTime);
         paramIndex++;
-    }
+      };
 
-    if(endTime)
-    {
+      if (endTime) {
         whereConditions.push(`time_bucket <= $${paramIndex}`);
         params.push(endTime);
         paramIndex++;
-    }
+      };
 
-    if(whereConditions.length>0)
-    {
-        query+=` WHERE ${whereConditions.join(" AND ")}`;
-    }
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(" AND ")}`;
+      };
 
-    query+=`GROUP BY service_name, endpoint, method, time_bucket
-     ORDER BY time_bucket DESC 
-     LIMIT $${paramIndex} OFFSET $${paramIndex+1}`;
+      query += `GROUP BY service_name, endpoint, method, time_bucket
+      ORDER BY time_bucket DESC 
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
 
-     params.push(safeLimit,safeOffset);
-     
-     const result=await this._query(query,params);
-     return result.rows;
-  }
-    catch(err)
-    {
-        this.logger.error(`Error getting metrics: ${err.message}`);
-        throw err;
-    }
-  }
+      params.push(safeLimit, safeOffset);
 
-  async getEndpoints(clientId,limit=10,startTime=null)
-  {
-    try{
-       const safeLimit=Math.min(Math.max(1,limit),MAX_LIMIT);
-       const query=`
+      const result = await this._query(query, params);
+      return result.rows;
+    } catch (err) {
+      this.logger.error(`Error getting metrics: ${err.message}`);
+      throw err;
+    };
+  };
+
+  async getEndpoints(clientId, limit = 10, startTime = null) {
+    try {
+      const safeLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
+      let query = `
        SELECT 
        service_name, endpoint, method,
        SUM(total_hits) AS total_hits,
        SUM(avg_latency * total_hits) / NULLIF(SUM(total_hits), 0) as avg_latency,
        SUM(error_hits) AS error_hits 
-       FROM endpoint_metrics,`;
+       FROM endpoint_metrics`;
 
-       const params=[];
-       let paramIndex=1;
+      const params = [];
+      let paramIndex = 1;
 
-       let whereConditions=[];
+      let whereConditions = [];
 
-         if(clientId!=null)
-            {
-                whereConditions.push(`client_id=$${paramIndex}`);
-                params.push(clientId);
-                paramIndex++;
-            }
-        if(startTime)
-        {
-            whereConditions.push(`time_bucket >= $${paramIndex}`);
-            params.push(startTime);
-            paramIndex++;
-        }
+      if (clientId != null) {
+        whereConditions.push(`client_id=$${paramIndex}`);
+        params.push(clientId);
+        paramIndex++;
+      };
 
-        query=`GROUP BY service_name, endpoint, method
+      if (startTime) {
+        whereConditions.push(`time_bucket >= $${paramIndex}`);
+        params.push(startTime);
+        paramIndex++;
+      };
+
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(" AND ")}`;
+      }
+
+      query += ` GROUP BY service_name, endpoint, method
         ORDER BY total_hits DESC
         LIMIT $${paramIndex}`;
 
-        params.push(safeLimit);
+      params.push(safeLimit);
 
-        const result=await this._query(query,params);
-        return result.rows;
-    }
-    catch(err)
-    {
-this.logger.error(`Error getting endpoints: ${err.message}`);
-        throw err;
-    }
-  }
+      const result = await this._query(query, params);
+      return result.rows;
+    } catch (err) {
+      this.logger.error(`Error getting endpoints: ${err.message}`);
+      throw err;
+    };
+  };
 
-
-  async getOverallstats(clientId,startTime=null,endTime=null)
-  {
-    try{
-        let query=`SELECT 
+  async getOverallstats(clientId, startTime = null, endTime = null) {
+    try {
+      let query = `SELECT 
         SUM(total_hits) AS total_hits,
         SUM(error_hits) AS error_hits,
         SUM(avg_latency * total_hits) / NULLIF(SUM(total_hits), 0) as avg_latency
@@ -209,37 +209,34 @@ this.logger.error(`Error getting endpoints: ${err.message}`);
         COUNT(DISTINCT endpoint) AS unique_endpoints
         FROM endpoint_metrics`;
 
-        const params=[];
-        let paramIndex=1;
+      const params = [];
+      let paramIndex = 1;
 
-        if(clientId!=null)
-        {
-            query+=` WHERE client_id=$${paramIndex}`;
-            params.push(clientId);
-            paramIndex++;
-        }
+      if (clientId != null) {
+        query += ` AND client_id=$${paramIndex}`;
+        params.push(clientId);
+        paramIndex++;
+      };
 
-        if(startTime)
-        {
-            query+=` AND time_bucket >= $${paramIndex}`;
-            params.push(startTime);
-            paramIndex++;
-        }
+      if (startTime) {
+        query += ` AND time_bucket >= $${paramIndex}`;
+        params.push(startTime);
+        paramIndex++;
+      };
 
-        if(endTime)
-        {
-            query+=` AND time_bucket <= $${paramIndex}`;
-            params.push(endTime);
-            paramIndex++;
-        }
+      //here time_bucket is a timestamp column in the endpoint_metrics table that represents the time interval for which the metrics are aggregated. The <= operator is used to filter the records based on the endTime parameter, ensuring that only metrics within the specified time range are considered in the overall statistics calculation.
+      if (endTime) {
+        //paramindex provides the date for the particular time bucket to be considered in the overall statistics calculation. It ensures that only metrics within the specified time range are included in the final result.
+        query += ` AND time_bucket <= $${paramIndex}`;
+        params.push(endTime);
+        paramIndex++;
+      };
 
-        const result=await this._query(query,params);
-        return result.rows[0] || {};
-    }
-    catch(err)
-    {
-        this.logger.error(`Error getting overall stats: ${err.message}`);
-        throw err;
-    }
-  }
-}
+      const result = await this._query(query, params);
+      return result.rows[0] || {};
+    } catch (err) {
+      this.logger.error(`Error getting overall stats: ${err.message}`);
+      throw err;
+    };
+  };
+};
