@@ -16,11 +16,11 @@ export class CircuitBreaker {
     this._halfOpenAttempts = 0;
     this._halfOpenSuccesses = 0;
     this._lastFailureTime = 0;
-  }
+  };
 
   _cooldownElapsed() {
     return Date.now() - this._lastFailureTime > this.cooldownMs;
-  }
+  };
 
   _transitionTo(newState) {
     const prev = this._state;
@@ -37,7 +37,7 @@ export class CircuitBreaker {
     this.logger.info(
       `[CircuitBreaker] ${prev} => ${newState}`
     );
-  }
+  };
 
   _openCircuit() {
     this._lastFailureTime = Date.now();
@@ -48,7 +48,7 @@ export class CircuitBreaker {
       failures: this._failures,
       cooldownMs: this.cooldownMs,
     });
-  }
+  };
 
   _reset() {
     this._failures = 0;
@@ -57,7 +57,7 @@ export class CircuitBreaker {
     this._lastFailureTime = 0;
 
     this._transitionTo(CircuitState.CLOSED);
-  }
+  };
 
   getState() {
     if (
@@ -68,30 +68,30 @@ export class CircuitBreaker {
     }
 
     return this._state;
-  }
+  };
 
   allowedRequest() {
     const currentState = this.getState();
 
     if (currentState === CircuitState.CLOSED) {
       return true;
-    }
+    };
 
     if (currentState === CircuitState.OPEN) {
       return false;
-    }
+    };
 
     if (currentState === CircuitState.HALF_OPEN) {
       if (this._halfOpenAttempts < this.halfOpenMaxAttempts) {
         this._halfOpenAttempts++;
         return true;
-      }
+      };
 
       return false;
-    }
+    };
 
     return false;
-  }
+  };
 
   onSuccess() {
     if (this._state === CircuitState.HALF_OPEN) {
@@ -109,7 +109,7 @@ export class CircuitBreaker {
       }
 
       return;
-    }
+    };
 
     if (this._failures > 0) {
       this._failures = 0;
@@ -117,8 +117,8 @@ export class CircuitBreaker {
       this.logger.info(
         "[CircuitBreaker] Resetting failure count to 0"
       );
-    }
-  }
+    };
+  };
 
   onFailure() {
     if (this._state === CircuitState.HALF_OPEN) {
@@ -128,7 +128,7 @@ export class CircuitBreaker {
 
       this._openCircuit();
       return;
-    }
+    };
 
     this._failures++;
     this._lastFailureTime = Date.now();
@@ -139,8 +139,8 @@ export class CircuitBreaker {
       );
 
       this._openCircuit();
-    }
-  }
+    };
+  };
 
   snapshot() {
     return {
@@ -152,5 +152,5 @@ export class CircuitBreaker {
       cooldownMs: this.cooldownMs,
       failureThreshold: this.failureThreshold,
     };
-  }
-}
+  };
+};
