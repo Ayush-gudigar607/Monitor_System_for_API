@@ -18,10 +18,11 @@ const { controllers } = dependencies;
 
 const authController = controllers.authController;
 
-// GET /api/auth
+// GET /api/auth(A basic endpoint to check if the auth service is running and to provide information about available endpoints)
 router.get("/", (req, res) => {
   console.log("GET /api/auth HIT");
 
+  //responce has been send to the client with the available endpoints and their methods
   return res.status(200).json(
     ResponceFormatter.success(
       {
@@ -49,25 +50,25 @@ router.get("/", (req, res) => {
           },
         ],
       },
-      "Auth endpoints available"
-    )
+      "Auth endpoints available",
+    ),
   );
 });
 
-// POST /api/auth/onboard-super-admin
+// POST /api/auth/onboard-super-admin(Which Mainly help to get the super admin onboarded to the system)
 router.post(
   "/onboard-super-admin",
   requestLogger,
   validate(onboardsuperAdminSchema),
-  authController.OnboardSuperAdmin.bind(authController)
+  authController.OnboardSuperAdmin.bind(authController),
 );
 
-// POST /api/auth/register
+// POST /api/auth/register(Which mainly helps users to create an account in the system)
 router.post(
   "/register",
   requestLogger,
   validate(registerSchema),
-  authController.register.bind(authController)
+  authController.register.bind(authController),
 );
 
 // POST /api/auth/login
@@ -75,7 +76,7 @@ router.post(
   "/login",
   requestLogger,
   validate(loginSchema),
-  authController.login.bind(authController)
+  authController.login.bind(authController),
 );
 
 // GET /api/auth/profile
@@ -83,7 +84,7 @@ router.get(
   "/profile",
   requestLogger,
   authenticate,
-  authController.getProfile.bind(authController)
+  authController.getProfile.bind(authController),
 );
 
 // POST /api/auth/logout
@@ -91,7 +92,7 @@ router.post(
   "/logout",
   requestLogger,
   authenticate,
-  authController.logout.bind(authController)
+  authController.logout.bind(authController),
 );
 
 export default router;

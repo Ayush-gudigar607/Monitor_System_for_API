@@ -12,7 +12,7 @@ export class AuthService {
   }
 
   //This method will format the user object by removing sensitive information like the password before returning it
-  formateResponce(user) {
+  formatResponse(user) {
     if (!user) {
       throw new Error("User object is required");
     }
@@ -30,17 +30,16 @@ export class AuthService {
   //This method will onboard a super admin user and return the user object and token
   async OnboardSuperAdmin(SuperAdminData) {
     try {
-      const existingUser = await this.userRepository.findAll();
+      // const existingUser = await this.userRepository.findAll();
 
-      //const existingSuperAdmin =
-      //   await userRepository.findSuperAdmin();
+      const existingSuperAdmin = await this.userRepository.findSuperAdmin();
 
-      // if (existingSuperAdmin) {
-      //   throw new Error("Super admin already exists");
-      // }
+      if (existingSuperAdmin) {
+        throw new Error("Super admin already exists");
+      }
 
       //This will check if the existing user array has any user with the role of SUPER_ADMIN, if it does then it will throw an error
-      if (existingUser.length > 0 && existingUser) {
+      if (existingSuperAdmin.length > 0 && existingSuperAdmin) {
         throw new AppError("Super Admin already exists", 409);
       }
 
@@ -49,7 +48,7 @@ export class AuthService {
       const token = SecurityUtils.generateToken(user);
 
       logger.info("Super Admin onboarded successfully");
-      return { user: this.formateResponce(user), token };
+      return { user: this.formatResponse(user), token };
     } catch (err) {
       logger.error(`Error onboarding Super Admin: ${err.message}`);
       throw err;
@@ -71,15 +70,20 @@ export class AuthService {
       const existingUsername = await this.userRepository.findByUsername(
         userData.username,
       );
+
+      //if the existingUsername is not null or undefined, then it will throw an error indicating that the user with this username already exists
       if (existingUsername) {
         throw new AppError("User with this username already exists", 409);
       }
 
+      //We gona get the user using the userRepository function
       const user = await this.userRepository.create(userData);
+
+      //Get the token using the SecurityUtils function and pass the user object to it
       const token = SecurityUtils.generateToken(user);
 
       logger.info(`User registered successfully with email: ${user.email}`);
-      return { user: this.formateResponce(user), token };
+      return { user: this.formatResponse(user), token };
     } catch (err) {
       logger.error(`Error registering user: ${err.message}`);
       throw err;
@@ -89,26 +93,36 @@ export class AuthService {
   //This method will login a user and return the user object and token
   async login(username, password) {
     try {
+      //Check if the user exists by their username
       const user = await this.userRepository.findByUsername(username);
+
+      //If the user does not exist, throw an error indicating invalid username or password
       if (!user) {
         throw new AppError("Invalid username or password", 401);
       }
 
+      //Check if the user account is active, if not throw an error indicating that the user account is inactive
       if (!user.isActive) {
         throw new AppError("User account is inactive", 403);
       }
 
+      //Compare the provided password with the stored hashed password, if they do not match throw an error indicating invalid username or password
       const isPasswordValid = await this.comparePassword(
         password,
         user.password,
       );
+
+      //if not isPasswordValid is true, then it will throw an error indicating invalid username or password
       if (!isPasswordValid) {
         throw new AppError("Invalid username or password", 401);
       }
 
       logger.info(`User logged in successfully with email: ${user.email}`);
+
+      //generate the token using the SecurityUtils function and pass the user object to it
       const token = SecurityUtils.generateToken(user);
-      return { user: this.formateResponce(user), token };
+
+      return { user: this.formatResponse(user), token };
     } catch (err) {
       logger.error(`Error logging in user: ${err.message}`);
       throw err;
@@ -118,12 +132,16 @@ export class AuthService {
   //This method will get the profile of a user by their userId and return the user object
   async getProfile(userId) {
     try {
+      //Get the user object by their userId using the userRepository function
       const user = await this.userRepository.findById(userId);
+
+      //if not user then it will throw an error indicating that the user was not found
       if (!user) {
         throw new AppError("User not found", 404);
       }
 
-      return this.formateResponce(user);
+      //then it will return the user object after formatting it using the formatResponse method to remove sensitive information like the password
+      return this.formatResponse(user);
     } catch (err) {
       logger.error(`Error fetching user profile: ${err.message}`);
       throw err;
@@ -133,11 +151,14 @@ export class AuthService {
   //This method will check if a user has super admin permissions by their userId and return a boolean indicating whether they have the permissions
   async checkSuperAdminPermissions(userId) {
     try {
+      //Get the user object by their userId using the userRepository function
       const user = await this.userRepository.findById(userId);
+      //if not user then it will throw an error indicating that the user was not found
       if (!user) {
         throw new AppError("User not found", 404);
       }
 
+      //return true if the user role is SUPER_ADMIN, otherwise return false
       return user.role === APPLICATION_ROLES.SUPER_ADMIN;
     } catch (error) {
       logger.error(`Error checking Super Admin permissions: ${error.message}`);

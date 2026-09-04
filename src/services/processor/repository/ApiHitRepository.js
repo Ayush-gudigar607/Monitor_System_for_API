@@ -12,8 +12,9 @@ export class ApiHitRepository extends BaseRepository {
   async save(userData) {
     try {
       const doc = new this.model(userData);
+
       if (!doc) {
-        logger.error("Error creating document");
+        this.logger.error("Error creating document");
         throw new AppError("Error creating document", 500);
       };
       await doc.save();

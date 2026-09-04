@@ -11,6 +11,9 @@ import postgres from "./shared/config/postgres.js";
 import config from "./shared/config/index.js";
 import authRouter from "./services/auth/routes/authRouter.js";
 import clientRouter from "./services/client/routes/clientRouter.js";
+import ingestRouter from "./services/ingest/router/ingestRouter.js";
+import analyticsRouter from "./services/analytics/routers/analyticService.js";
+
 const app = express();
 
 app.use(helmet());
@@ -77,6 +80,11 @@ app.use("/api/auth", authRouter);
 
 //api/admin/client/onboard
 app.use("/api",clientRouter)
+
+app.use("/api/hit",ingestRouter);
+
+//api/analytics routes
+app.use("/api/analytics",analyticsRouter);
 
 //if only error comes this middleware will handle it and send the response to the client
 app.use(errorHandler);

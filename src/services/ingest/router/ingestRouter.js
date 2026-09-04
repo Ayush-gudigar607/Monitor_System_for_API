@@ -1,5 +1,5 @@
 import express from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit  from 'express-rate-limit'
 import config from "../../../shared/config/index.js";
 import validateApiKey from "../../../shared/middlewares/validateApiKey.js";
 
@@ -7,8 +7,8 @@ const router = express.Router();
 
 
 const ingestLimitter=rateLimit({
-  windowMs:config.ingest.rateLimit.windowMs,
-  max:config.ingest.rateLimit.max,
+  windowMs:config.rateLimit.windowMs,
+  max:config.rateLimit.max,
  message:{
         success:false,
         message:"Too many requests,please try again later",

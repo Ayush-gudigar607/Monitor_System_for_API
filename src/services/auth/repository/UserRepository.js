@@ -77,4 +77,14 @@ export default class MongoUserRepository extends BaseRepository {
       throw err;
     }
   }
+
+  async findSuperAdmin()
+  {
+    const superAdmin=await this.model.findOne({role:"SUPER_ADMIN"})
+    if(!superAdmin)
+    {
+      return false;
+    }
+    return true;
+  }
 }

@@ -47,12 +47,12 @@ export const registerSchema = {
 
 // Validation schema for user login
 export const loginSchema = {
-    username: {
-        required: true,
-        type: "string"
-    },
-    password: {
-        required: true,
-        type: "string"
-    }
+  username: {
+    required: true,
+    type: "string",
+  },
+  password: {
+    required: true,
+    type: "string",
+  },
 };
