@@ -4,8 +4,8 @@ import clientContainer from "../../services/client/Dependencies/dependencies.js"
 
 const validateApiKey = async (req, res, next) => {
   try {
-    const apiKey = req.headers["x-api-key"];
-    if (!apiKey) {
+    const apiKeyValue = req.headers["x-api-key"];
+    if (!apiKeyValue || typeof apiKeyValue !== "string") {
       logger.warn("API key is missing in the request headers", {
         path: req.path,
         ip: req.ip,
@@ -15,19 +15,23 @@ const validateApiKey = async (req, res, next) => {
         .json(ResponceFormatter.error("API key is missing", 401));
     }
 
-    const result = await clientContainer.services.getClientByApiKey(apiKey);
+    const result = await clientContainer.services.clientService.getClientByApiKey(
+      apiKeyValue,
+    );
 
-    if (result) {
+    if (!result) {
       logger.warn("Invalid api key attempted", {
         path: req.path,
         ip: req.ip,
-        apiKey: apiKey.substring(0, 8) + "...",
+        apiKey: apiKeyValue.substring(0, 8) + "...",
       });
 
       return res
         .status(401)
         .json(ResponceFormatter.error("Invalid API key", 401));
     }
+
+    const { client, apiKey } = result;
 
     if (!client.isActive) {
       logger.warn("Inactive client attempted API access", {
@@ -41,7 +45,7 @@ const validateApiKey = async (req, res, next) => {
         .json(ResponceFormatter.error("client account is inactive", 403));
     }
 
-    if (apiKey.permissions?.canIngest) {
+    if (!apiKey.permissions?.canIngest) {
       logger.warn("API key without Ingest permissions attempted access", {
         path: req.path,
         ip: req.ip,
@@ -64,10 +68,10 @@ const validateApiKey = async (req, res, next) => {
     });
     next();
   } catch (err) {
-    logger.error("error validating API Key:", error);
+    logger.error("Error validating API key", { error: err.message });
     return res
       .status(500)
-      .json(ResponseFormatter.error("Internal server error", 500));
+      .json(ResponceFormatter.error("Internal server error", 500));
   }
 };
 
