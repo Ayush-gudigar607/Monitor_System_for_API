@@ -22,7 +22,7 @@ export class MetricsRepository extends BaseRepository {
       throw err;
     };
 
-    //This will return a promise that resolves with the query result or rejects with an error and defualt_limit is defaulted to 30 seconds, you can adjust it as per your needs.
+    // Returns a promise that resolves with the query result or rejects with an error; DEFAULT_LIMIT defaults to 30 seconds (adjust as needed).
     return target.query({
       text: sql,
       values: params,
