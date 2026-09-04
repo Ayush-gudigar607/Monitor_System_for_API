@@ -64,6 +64,8 @@ export class ConformChannelManager extends EventEmitter {
       //for the waiters
       for (const waiter of this._connectWaiters) waiter.resolve(conformChannel);
       this._connectWaiters = [];
+      
+      // Return the channel for the current call
       return conformChannel;
     } catch (err) {
       for (const waiter of this._connectWaiters) waiter.reject(err);
