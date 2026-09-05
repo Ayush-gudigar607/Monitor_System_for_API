@@ -7,7 +7,16 @@ import jwt from "jsonwebtoken";
 const authenticate = (req, res, next) => {
   try {
     let token = null;
-    if (req.cookies && req.cookies.token) {
+    const authorization = req.get("authorization");
+    if (authorization) {
+      const [scheme, bearerToken] = authorization.split(" ");
+      if (scheme?.toLowerCase() !== "bearer" || !bearerToken) {
+        return res
+          .status(401)
+          .json(ResponceFormatter.error("Invalid authorization header", 401));
+      }
+      token = bearerToken;
+    } else if (req.cookies?.token) {
       token = req.cookies.token;
     }
     if (!token) {
@@ -15,12 +24,12 @@ const authenticate = (req, res, next) => {
         .status(401)
         .json(ResponceFormatter.error("Authentication token is required", 401));
     }
+
     //decode the jwt
     const decoded = jwt.verify(token, config.jwt.secret);
     const { _id, username, email, role, clientId } = decoded;
     //assign the decoded user information to req.user for further use in the request lifecycle
     req.user = { _id, username, email, role, clientId };
-    // console.log("Authenticated user:", req.user);
     next();
   } catch (error) {
     logger.error("Authentication error:", {
