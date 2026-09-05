@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "consumer": "node src/services/processor/consumer.js",
     "init": "node init-system.js",
     "int:env": "node init-syatem.js --generaate-env"
   },
