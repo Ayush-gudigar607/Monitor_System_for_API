@@ -1,6 +1,6 @@
 import {createEventProducer} from "../../../shared/events/producer/createEventProducer.js";
 import {IngestController} from "../controllers/ingestController.js";
-import {IngestService} from "../services/ingestservice.js";
+import {ingestService} from "../services/ingestservice.js";
 
 class Container
 {
@@ -9,7 +9,7 @@ class Container
         const eventProducer=createEventProducer();
 
         const services={
-            ingestService:new IngestService({eventProducer})
+            ingestService:new ingestService({eventProducer})
         }
 
         const controllers={
