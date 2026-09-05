@@ -7,7 +7,7 @@ import { ConformChannelManager } from "./ConformChannelManager.js";
 import {EventProducer} from "./eventProducer.js";
 import {RetryStrategy} from "./RetryStrategy.js";
 
-export function createEventProducer({overrides={}})
+export function createEventProducer({ overrides = {} } = {})
 {
     const log=overrides.logger || logger;
     const rabbitmq=overrides.rabbitmq || rabbitmqConnection;
