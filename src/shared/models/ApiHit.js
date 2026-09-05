@@ -56,7 +56,7 @@ const apiHitSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  useragent:{
+  userAgent:{
     type: String,
     required: true
   }
