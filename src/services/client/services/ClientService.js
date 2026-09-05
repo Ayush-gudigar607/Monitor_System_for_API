@@ -64,7 +64,7 @@ formatApiKeyForResponse(apiKey) {
     ? apiKey.toObject()
     : { ...apiKey };
 
-  delete object.keyValue;
+  // delete object.keyValue;
 
   return object;
 }
@@ -293,9 +293,9 @@ formatApiKeyForResponse(apiKey) {
 
       logger.info("API key created in MongoDB with ID:", apiKey._id);
       
-    //   return apiKey;
+      return apiKey;
 
-      return this.formatApiKeyForResponse(apiKey);
+      // return this.formatApiKeyForResponse(apiKey);
     } catch (err) {
       logger.error(`Error creating API key: ${err.message}`);
       throw err;

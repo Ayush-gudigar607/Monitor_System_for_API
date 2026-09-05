@@ -49,7 +49,9 @@ class EventConsumer {
       lastProcessedAt: null,
     };
     this._processedIds = new Set();
-    this._poisonMessages = new Set();
+    // Track a failure count per event type. This must be a Map because the
+    // error handler reads and updates counts with get()/set().
+    this._poisonMessages = new Map();
   }
 
   async _connectDatabase() {
