@@ -39,7 +39,13 @@ export class IngestController {
                 }))
             }
 
-            res.status(200).json(ResponseFormatter.success('Event processed successfully',201));
+            return res.status(202).json(
+                ResponseFormatter.success(
+                    { eventId: result.eventId },
+                    "Event accepted for processing",
+                    202,
+                ),
+            );
 
         } catch (error) {
             next(error);
