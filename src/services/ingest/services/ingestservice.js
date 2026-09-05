@@ -109,7 +109,9 @@ export class ingestService{
         }
         catch(err)
         {
-         logger.error("Error occured while validating hit data",{error});
+         logger.error("Error occurred while ingesting hit data", {
+          error: err.message,
+         });
          throw new AppError("Invalid hit data",400);
         }
     }
