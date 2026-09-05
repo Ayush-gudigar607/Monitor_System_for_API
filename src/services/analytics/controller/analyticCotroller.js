@@ -1,4 +1,5 @@
 import AppError from "../../../shared/utils/AppError.js";
+import ResponseFormatter from "../../../shared/utils/ResponceFormatter.js";
 
 export class AnalyticController {
   constructor({
@@ -75,22 +76,23 @@ export class AnalyticController {
   }
 
   async ensureCanViewAnalytics(req) {
-    if (!req.user || !req.user.userId) {
+    const userId = req.user?._id;
+    if (!userId) {
       throw new AppError("Unauthorized", 401);
     }
 
-    const isSuperAdmin = await this.authService.isSuperAdmin(req.user.userId);
+    const isSuperAdmin = await this.authService.checkSuperAdminPermissions(userId);
 
     if (isSuperAdmin) {
       return true;
     }
     //if not super admin, check if user has CanViewAnalytics permission
-    const profile = await this.authService.getUserProfile(req.user.userId);
+    const profile = await this.authService.getProfile(userId);
 
     if (
       !profile ||
       !profile.permissions ||
-      !profile.permissions.CanViewAnalytics
+      !profile.permissions.canViewAnalytics
     ) {
       throw new AppError(
         "Forbidden: You do not have permission to view analytics",
