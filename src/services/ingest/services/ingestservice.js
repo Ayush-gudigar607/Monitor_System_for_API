@@ -62,7 +62,7 @@ export class ingestService{
            const event={
             eventId:uuidv4(),
             timestamp:new Date,
-            serverName:hitData.endpoint,
+            serviceName:hitData.serviceName,
             endpoint:hitData.endpoint,
             method:hitData.method.toUpperCase(),
             statusCode:hitData.statusCode,

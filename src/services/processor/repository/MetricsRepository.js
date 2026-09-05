@@ -139,7 +139,7 @@ export class MetricsRepository extends BaseRepository {
         query += ` WHERE ${whereConditions.join(" AND ")}`;
       };
 
-      query += `GROUP BY service_name, endpoint, method, time_bucket
+      query += ` GROUP BY service_name, endpoint, method, time_bucket
       ORDER BY time_bucket DESC 
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
 
@@ -199,27 +199,28 @@ export class MetricsRepository extends BaseRepository {
     };
   };
 
-  async getOverallstats(clientId, startTime = null, endTime = null) {
+  async getOverallStats(clientId, startTime = null, endTime = null) {
     try {
       let query = `SELECT 
         SUM(total_hits) AS total_hits,
         SUM(error_hits) AS error_hits,
-        SUM(avg_latency * total_hits) / NULLIF(SUM(total_hits), 0) as avg_latency
+        SUM(avg_latency * total_hits) / NULLIF(SUM(total_hits), 0) AS avg_latency,
         COUNT(DISTINCT service_name) AS unique_services,
         COUNT(DISTINCT endpoint) AS unique_endpoints
         FROM endpoint_metrics`;
 
       const params = [];
       let paramIndex = 1;
+      const whereConditions = [];
 
       if (clientId != null) {
-        query += ` AND client_id=$${paramIndex}`;
+        whereConditions.push(`client_id=$${paramIndex}`);
         params.push(clientId);
         paramIndex++;
       };
 
       if (startTime) {
-        query += ` AND time_bucket >= $${paramIndex}`;
+        whereConditions.push(`time_bucket >= $${paramIndex}`);
         params.push(startTime);
         paramIndex++;
       };
@@ -227,10 +228,14 @@ export class MetricsRepository extends BaseRepository {
       //here time_bucket is a timestamp column in the endpoint_metrics table that represents the time interval for which the metrics are aggregated. The <= operator is used to filter the records based on the endTime parameter, ensuring that only metrics within the specified time range are considered in the overall statistics calculation.
       if (endTime) {
         //paramindex provides the date for the particular time bucket to be considered in the overall statistics calculation. It ensures that only metrics within the specified time range are included in the final result.
-        query += ` AND time_bucket <= $${paramIndex}`;
+        whereConditions.push(`time_bucket <= $${paramIndex}`);
         params.push(endTime);
         paramIndex++;
       };
+
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(" AND ")}`;
+      }
 
       const result = await this._query(query, params);
       return result.rows[0] || {};

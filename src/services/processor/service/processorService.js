@@ -79,14 +79,13 @@ export class ProcessorService {
         method: eventData.method,
         totalHits: 1,
         errorHits: eventData.statusCode >= 400 ? 1 : 0,
-        avgLatency: eventData.responseTime,
-        minLatency: eventData.responseTime,
-        maxLatency: eventData.responseTime,
+        avgLatency: eventData.latencyMs,
+        minLatency: eventData.latencyMs,
+        maxLatency: eventData.latencyMs,
         timeBucket: timeBucket,
       };
 
-      // Call the correct method name defined in MetricsRepository
-      await this.metricsRepository.upsertEndpointMetrics(metricsData);
+      await this.metricsRepository.upsertMetrics(metricsData);
 
       logger.info(
         `Metrics updated successfully for eventId: ${eventData.eventId}`,
