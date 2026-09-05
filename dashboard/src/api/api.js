@@ -92,7 +92,7 @@ export const analyticsApi={
         const responce=await api.get('/analytics/time-series',{params});
         return responce.data;
     }
-}
+};
 
 export const clientApi={
     getCurrentClient:async ()=>
@@ -123,7 +123,7 @@ export const clientApi={
         const response = await api.get(`/admin/clients/${clientId}/api-keys`);
         return response.data;
     },
-}
+};
 
 export default api;
 
