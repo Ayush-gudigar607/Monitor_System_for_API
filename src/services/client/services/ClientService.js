@@ -98,6 +98,21 @@ formatApiKeyForResponse(apiKey) {
     return prefix + randomString;
   }
 
+  async getClientByApiKey(apiKeyValue) {
+    const apiKey = await this.apiKeyRepository.findByKeyValue(apiKeyValue);
+
+    if (!apiKey || apiKey.isExpired()) {
+      return null;
+    }
+
+    const client = await this.clientRepository.findById(apiKey.clientId);
+    if (!client) {
+      return null;
+    }
+
+    return { client, apiKey };
+  }
+
   async createClient(clientData, adminUser) {
     try {
       const { name, email, description, website } = clientData;
